@@ -1,0 +1,15 @@
+Please update this file to reflect your progress by adding a * inside the brackets for each task you have completed.
+
+[*] 1: Building and execution
+[ ] 2: Configuration 
+[ ] 3: Server Integration
+[ ] 3: Client Integration
+[ ] 4: Stock Management
+[ ] 5: Kitchen Staff
+[ ] 6: Communication
+[ ] 7: Drones
+[ ] 8: Persistence
+[ ] Extension: Drone battery
+[ ] Extension: Staff fatigue
+[ ] Extension: Drone capacity
+[ ] Extension: Multiple drone hops

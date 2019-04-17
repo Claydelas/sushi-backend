@@ -1,0 +1,35 @@
+POSTCODE:SO17 1BJ
+
+RESTAURANT:Southampton Sushi:SO17 1BJ
+
+POSTCODE:SO17 1TJ
+POSTCODE:SO17 1BX
+POSTCODE:SO17 2NJ
+POSTCODE:SO17 1TW
+POSTCODE:SO17 2LB
+
+SUPPLIER:Sushi Supplies:SO17 1BX
+SUPPLIER:Sushi R Us:SO17 2NJ
+SUPPLIER:Sushi For 4U:SO17 2LB
+
+INGREDIENT:Rice:Grams:Sushi Supplies:1000:5000:1
+INGREDIENT:Vinegar:Grams:Sushi Supplies:100:1000:5
+INGREDIENT:Salt:Grams:Sushi Supplies:50:100:1
+INGREDIENT:Avocado:Units:Sushi R Us:5:10:10
+
+DISH:Sushi Roll:Rice and things:10:1:10:150 * Rice,30 * Vinegar,10 * Salt,1 * Avocado
+DISH:Side Rice:Side portion of rice:5:1:10:500 * Rice
+
+USER:Admin:password:University Road:SO17 1BJ
+
+ORDER:Admin:5 * Sushi Roll,2 * Side Rice
+
+STOCK:Sushi Roll:10
+STOCK:Rice:300
+
+STAFF:Joshua
+STAFF:Mary
+
+DRONE:10
+DRONE:20
+

@@ -1,0 +1,12 @@
+RESTAURANT:Name:Postcode
+POSTCODE:Postcode
+SUPPLIER:Name:Postcode
+INGREDIENT:Name:Unit:Supplier:Restock Threshold:Restock Amount:Weight
+DISH:Name:Description:Price:Restock Threshold:Restock Amount:Quantity * Item,Quantity * Item...
+USER:Name:Password:Location:Postcode
+STAFF:Name
+DRONE:Speed
+ORDER:User:Quantity * Dish,Quantity * Dish...
+STOCK:Dish|Ingredient:Quantity
+
+Note: Ordering is not important apart from an item must be defined before it is used/referred to in another item
