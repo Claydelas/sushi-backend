@@ -51,8 +51,6 @@ public class Server implements ServerInterface {
 		Dish dish1 = addDish("Dish 1","Dish 1",1,1,10);
 		Dish dish2 = addDish("Dish 2","Dish 2",2,1,10);
 		Dish dish3 = addDish("Dish 3","Dish 3",3,1,10);
-		
-		orders.add(new Order());
 
 		addIngredientToDish(dish1,ingredient1,1);
 		addIngredientToDish(dish1,ingredient2,2);
@@ -68,6 +66,9 @@ public class Server implements ServerInterface {
 		addDrone(1);
 		addDrone(2);
 		addDrone(3);
+
+		User user1 = new User("john", "john123","elm street", postcode5);
+		users.add(user1);
 	}
 	
 	@Override
@@ -270,7 +271,7 @@ public class Server implements ServerInterface {
 
 	@Override
 	public Postcode addPostcode(String code) {
-		Postcode mock = new Postcode(code);
+		Postcode mock = new Postcode(code,restaurant);
 		this.postcodes.add(mock);
 		this.notifyUpdate();
 		return mock;
