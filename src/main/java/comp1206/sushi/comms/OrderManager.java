@@ -24,7 +24,6 @@ public class OrderManager extends Thread {
     public OrderManager(ArrayList<Order> orders, ArrayList<Drone> drones) {
         this.orders = orders;
         this.drones = drones;
-
     }
 
 

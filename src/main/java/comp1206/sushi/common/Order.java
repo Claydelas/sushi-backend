@@ -30,8 +30,7 @@ public class Order extends Model implements Serializable {
     }
 
     public Number getDistance() {
-        //TODO
-        return 1;
+        return user.getDistance();
     }
 
     @Override

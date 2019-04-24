@@ -18,8 +18,8 @@ public class Inventory extends Thread {
     private Map<Ingredient, Number> ingredients;
     private Map<Dish, Number> dishes;
 
-    private Boolean restockingIngredients;
-    private Boolean restockingDish;
+    private boolean restockingIngredients;
+    private boolean restockingDish;
 
     private ArrayList<Staff> staff;
     private ArrayList<Drone> drones;
@@ -32,14 +32,12 @@ public class Inventory extends Thread {
      * @param drones
      */
     public Inventory(ArrayList<Staff> staff, ArrayList<Drone> drones) {
-        this.ingredients = new HashMap<>();
-        this.dishes = new HashMap<>();
-        this.restockingIngredients = false;
-        this.restockingDish = false;
+        ingredients = new HashMap<>();
+        dishes = new HashMap<>();
         this.staff = staff;
         this.drones = drones;
         this.restockingDish = true;
-        this.restockingIngredients = false;
+        this.restockingIngredients = true;
     }
 
     /**
@@ -55,12 +53,12 @@ public class Inventory extends Thread {
         return ingredients;
     }
 
-    public void setRestockIngredient(Boolean restockingIngredients) {
-        this.restockingIngredients = restockingIngredients;
+    public void setRestockIngredients(boolean enabled) {
+        this.restockingIngredients = enabled;
     }
 
-    public synchronized void setRestockThreshold(Boolean restockingDish) {
-        this.restockingDish = restockingDish;
+    public synchronized void setRestockDishes(boolean enabled) {
+        this.restockingDish = enabled;
     }
 
 
@@ -124,11 +122,6 @@ public class Inventory extends Thread {
         return flag;
     }
 
-    /**
-     * Remove the ingredients from the dish
-     *
-     * @param dishToRestock
-     */
     private void removeIngredientsDish(Dish dishToRestock) {
 
         Map<Ingredient, Number> recipe = dishToRestock.getRecipe();
@@ -171,28 +164,16 @@ public class Inventory extends Thread {
             if (ingredientToRestock(entry)) {
 
                 synchronized (entry.getKey()) {
-                    int restockNumber = entry.getValue().intValue() + entry.getKey().getRestockThreshold().intValue() + entry.getKey().getRestockAmount().intValue();
-                    sendDroneRestockIngredient(entry.getKey(), restockNumber);
+                    sendDroneRestockIngredient(entry.getKey(), entry.getKey().getRestockAmount().intValue());
                     break;
-
                 }
             }
         }
     }
 
-
-    /**
-     * Check ingredient to restock
-     *
-     * @param entry
-     * @return
-     */
     public synchronized boolean ingredientToRestock(Map.Entry<Ingredient, Number> entry) {
         Ingredient ingredient = entry.getKey();
-        Number currentLevel = entry.getValue();
-
-        if ((int) currentLevel < ingredient.getRestockThreshold().intValue()) return true;
-        else return false;
+        return entry.getValue().intValue() < ingredient.getRestockThreshold().intValue();
     }
 
     /**
@@ -203,15 +184,14 @@ public class Inventory extends Thread {
      * @param restockLevel
      * @throws InterruptedException
      */
-    public synchronized void sendDroneRestockIngredient(Ingredient ingredientToRestock, Integer restockLevel) throws InterruptedException {
+    public synchronized void sendDroneRestockIngredient(Ingredient ingredientToRestock, int restockLevel) throws InterruptedException {
 
-        for (Drone currentDrone : drones) {
-
-            if (currentDrone.getStatus().equals("Idle")) {
-
-                //currentDrone.restockIngredient(ingredientToRestock, restockLevel, this);
-            }
-        }
+//        for (Drone currentDrone : drones) {
+//
+//            if (currentDrone.getStatus().equals("Idle")) {
+//                //currentDrone.restockIngredient(ingredientToRestock, restockLevel, this);
+//            }
+//        }
     }
 
 
@@ -219,19 +199,22 @@ public class Inventory extends Thread {
      * Thread Running always
      * Checks for ingredients and dishes to restock
      */
+    // FIXME: 24/04/2019
     @Override
     public void run() {
         while (true) {
 
             try {
+                if(restockingIngredients)
                 checkIngredientLevels();
+                if(restockingDish)
                 checkDishLevels();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
             try {
-                Thread.sleep(40);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -242,15 +225,13 @@ public class Inventory extends Thread {
     /**
      * Put Ingredient or Dish methods
      */
-    public synchronized void putIngredient(Ingredient toAdd, Integer i) {
+    public synchronized void putIngredient(Ingredient toAdd, int i) {
         ingredients.put(toAdd, i);
     }
 
-    public synchronized void putDish(Dish dishToAdd, Integer i) {
+    public synchronized void putDish(Dish dishToAdd, int i) {
         dishes.put(dishToAdd, i);
     }
-
-
 }
 
 
