@@ -1,12 +1,10 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.*;
-import comp1206.sushi.comms.Comms;
 import comp1206.sushi.comms.OrderManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -23,6 +21,7 @@ public class Server implements ServerInterface {
     public ArrayList<Supplier> suppliers = new ArrayList<>();
     public ArrayList<User> users = new ArrayList<>();
     public ArrayList<Postcode> postcodes = new ArrayList<>();
+    public ArrayList[] lists = {dishes, drones, ingredients, orders, staff, suppliers, users, postcodes};
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
 
     private HashMap<String, User> availableUsers = new HashMap<>();
@@ -31,7 +30,6 @@ public class Server implements ServerInterface {
 
     private Inventory inventory = new Inventory(staff, drones);
     private OrderManager orderManager = new OrderManager(orders, drones);
-    private Comms c;
 
     public Server() {
         logger.info("Starting up server...");
@@ -79,9 +77,6 @@ public class Server implements ServerInterface {
         inventory.start();
         orderManager.start();
 
-        c = new Comms(users, postcodes, availableUsers, dishes, orders, inventory, ordersId);
-        new Thread(c).start();
-
 //        /**
 //         * On close save all the data DATA PERSISTENCE PART 9 */
 //        Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -101,7 +96,7 @@ public class Server implements ServerInterface {
     public Dish addDish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
         Dish newDish = new Dish(name, description, price, restockThreshold, restockAmount);
         this.dishes.add(newDish);
-        inventory.putDish(newDish,0);
+        inventory.putDish(newDish, 0);
         this.notifyUpdate();
         return newDish;
     }
@@ -129,12 +124,12 @@ public class Server implements ServerInterface {
 
     @Override
     public void setStock(Dish dish, Number stock) {
-        inventory.putDish(dish,stock.intValue());
+        inventory.putDish(dish, stock.intValue());
     }
 
     @Override
     public void setStock(Ingredient ingredient, Number stock) {
-        inventory.putIngredient(ingredient,stock.intValue());
+        inventory.putIngredient(ingredient, stock.intValue());
     }
 
     @Override
@@ -147,8 +142,8 @@ public class Server implements ServerInterface {
                                     Number restockThreshold, Number restockAmount, Number weight) {
         Ingredient mockIngredient = new Ingredient(name, unit, supplier, restockThreshold, restockAmount, weight);
         this.ingredients.add(mockIngredient);
-        availableIngredients.put(name,mockIngredient);
-        inventory.putIngredient(mockIngredient,0);
+        availableIngredients.put(name, mockIngredient);
+        inventory.putIngredient(mockIngredient, 0);
         this.notifyUpdate();
         return mockIngredient;
     }
@@ -318,14 +313,10 @@ public class Server implements ServerInterface {
 
     @Override
     public void loadConfiguration(String filename) {
-        Configuration configuration = new Configuration(filename, suppliers, ingredients, dishes, users, postcodes, staff, drones, orders, inventory, availableUsers, availableIngredients, ordersId);
-
-        try {
-            configuration.setUp();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        for (ArrayList list : lists) {
+            list.clear();
         }
+        new Configuration(filename, this);
         System.out.println("Loaded configuration: " + filename);
     }
 

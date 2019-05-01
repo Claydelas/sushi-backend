@@ -34,7 +34,8 @@ public class Client implements ClientInterface {
 
     @Override
     public Restaurant getRestaurant() {
-        // TODO Auto-generated method stub
+        commsClient.sendMessage(new Message("getRestaurant", null));
+        Message returnedMessage = commsClient.receiveMessage();
         return null;
     }
 

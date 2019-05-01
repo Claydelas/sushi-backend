@@ -11,18 +11,16 @@ import comp1206.sushi.common.Order;
 public class Order extends Model implements Serializable {
 
     private User user;
-    private int id;
     private String status;
     private float cost;
     private boolean orderComplete;
     private HashMap<Dish, Number> orders;
 
-    public Order(User user, HashMap<Dish, Number> orders, int id) {
+    public Order(User user, HashMap<Dish, Number> orders) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
         this.name = dtf.format(now);
         this.user = user;
-        this.id = id;
         this.orders = orders;
         status = "Pending";
         cost = calculateCost();
@@ -84,10 +82,6 @@ public class Order extends Model implements Serializable {
 
     public User getUser() {
         return user;
-    }
-
-    public int getId() {
-        return id;
     }
 
 }

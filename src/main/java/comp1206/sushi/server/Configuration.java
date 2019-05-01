@@ -1,294 +1,127 @@
 package comp1206.sushi.server;
 
-import comp1206.sushi.common.*;
+import comp1206.sushi.common.Dish;
+import comp1206.sushi.common.Order;
+import comp1206.sushi.common.User;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Stream;
 
-/**
- * Configuration Class
- * Loads data from File
- */
 public class Configuration {
 
+    public Configuration(String filename, Server server) {
+        try (Stream<String> stream = Files.lines(Paths.get(filename))) {
+            stream
+                    .filter(s -> !s.isBlank())
+                    .forEach(s -> {
+                        System.out.println(s);
+                        if (s.startsWith("POSTCODE")) {
+                            server.addPostcode(s.split(":")[1]);
+                        } else if (s.startsWith("RESTAURANT")) {
+                            String[] restaurant = s.split(":");
 
-    /**
-     * Member variables
-     */
-    private String filename;
-    private ArrayList<Supplier> suppliers;
-    private ArrayList<Ingredient> ingredients;
-    private ArrayList<Dish> dishes;
-    private ArrayList<User> users;
-    private ArrayList<Postcode> postcodes;
-    private ArrayList<Staff> staff;
-    private ArrayList<Drone> drones;
-    private ArrayList<Order> orders;
-    private Inventory inventory;
+                            server.getRestaurant().setName(restaurant[1]);
+                            server.getRestaurant().setLocation(server.getPostcodes()
+                                    .stream()
+                                    .filter(postcode -> postcode.getName().equals(restaurant[2]))
+                                    .findFirst()
+                                    .get());
+                        } else if (s.startsWith("SUPPLIER")) {
+                            String[] supplier = s.split(":");
 
-    private Map<String, Dish> availableDishes;
-    private Map<String, Ingredient> availableIngredients;
-    private Map<String, Postcode> availablePostcodes;
-    private HashMap<String, User> availableUsers;
-    private HashMap<String, Supplier> availableSuppliers;
+                            server.addSupplier(supplier[1], server.getPostcodes()
+                                    .stream()
+                                    .filter(postcode -> postcode.getName().equals(supplier[2]))
+                                    .findFirst()
+                                    .get());
+                        } else if (s.startsWith("INGREDIENT")) {
+                            String[] ingredient = s.split(":");
 
-    private HashMap<String, Integer> ordersId;
+                            server.addIngredient(ingredient[1], ingredient[2],
+                                    server.getSuppliers()
+                                            .stream()
+                                            .filter(supplier -> supplier.getName().equals(ingredient[3]))
+                                            .findFirst()
+                                            .get(),
+                                    Integer.parseInt(ingredient[4]), Integer.parseInt(ingredient[5]), Integer.parseInt(ingredient[6]));
+                        } else if (s.startsWith("DISH")) {
+                            String[] dish = s.split(":");
+                            Dish newdish = server.addDish(dish[1], dish[2],
+                                    Double.parseDouble(dish[3]),
+                                    Integer.parseInt(dish[4]),
+                                    Integer.parseInt(dish[5]));
 
+                            String[] recipe = dish[6].split(",");
 
-    /**
-     * @param filename
-     * @param suppliers
-     * @param ingredients
-     * @param dishes
-     * @param users
-     * @param postcodes
-     * @param staff
-     * @param drones
-     * @param orders
-     * @param inventory
-     * @param availableUsers
-     * @param availableIngredients
-     * @param ordersId
-     */
-    public Configuration(String filename, ArrayList<Supplier> suppliers, ArrayList<Ingredient> ingredients, ArrayList<Dish> dishes, ArrayList<User> users, ArrayList<Postcode> postcodes, ArrayList<Staff> staff, ArrayList<Drone> drones, ArrayList<Order> orders, Inventory inventory, HashMap<String, User> availableUsers, Map<String, Ingredient> availableIngredients, HashMap<String, Integer> ordersId) {
+                            for (String ingredient : recipe) {
+                                String[] tuple = ingredient.split(" \\* ");
 
-        this.filename = filename;
-        this.suppliers = suppliers;
-        this.ingredients = ingredients;
-        this.dishes = dishes;
-        this.users = users;
-        this.postcodes = postcodes;
-        this.staff = staff;
-        this.drones = drones;
-        this.orders = orders;
+                                server.addIngredientToDish(newdish, server.getIngredients()
+                                                .stream()
+                                                .filter(i -> i.getName().equals(tuple[1]))
+                                                .findFirst()
+                                                .get(),
+                                        Double.parseDouble(tuple[0]));
+                            }
+                        } else if (s.startsWith("USER")) {
+                            String[] user = s.split(":");
+                            server.users.add(new User(user[1], user[2], user[3], server.getPostcodes()
+                                    .stream()
+                                    .filter(postcode -> postcode.getName().equals(user[4]))
+                                    .findFirst()
+                                    .get()));
+                        } else if (s.startsWith("ORDER")) {
+                            String[] order = s.split(":");
+                            HashMap<Dish, Number> neworder = new HashMap<>();
 
-        this.inventory = inventory;
-        this.availableUsers = availableUsers;
-        this.availableIngredients = availableIngredients;
-        this.ordersId = ordersId;
+                            String[] orderedDishes = order[2].split(",");
 
+                            for (String orderedDish : orderedDishes) {
+                                String[] dish = orderedDish.split(" \\* ");
 
-        availableDishes = new HashMap<>();
-        availablePostcodes = new HashMap<>();
-        availableSuppliers = new HashMap<>();
+                                neworder.put(server.getDishes()
+                                        .stream()
+                                        .filter(i -> i.getName().equals(dish[1]))
+                                        .findFirst()
+                                        .get(), Integer.parseInt(dish[0]));
+                            }
+                            Order newOrder = new Order(server.getUsers()
+                                    .stream()
+                                    .filter(i -> i.getName().equals(order[1]))
+                                    .findFirst()
+                                    .get(), neworder);
 
-    }
+                            server.orders.add(newOrder);
+                            //server.orderQueue.add(newOrder);
+                        } else if (s.startsWith("STOCK")) {
+                            String[] stock = s.split(":");
+//                            Dish dishForStock = null;
+//                            Ingredient ingredientForStock = null;
+//
+//                            // Search through both the dishes and ingredients to check if the name matches
+//                            for (Dish dishStock : server.getDishes()) {
+//                                if (dishStock.getName().equals(strings[1])) dishForStock = dishStock;
+//                            }
+//                            for (Ingredient ingredientStock : server.getIngredients()) {
+//                                if (ingredientStock.getName().equals(strings[1])) ingredientForStock = ingredientStock;
+//                            }
+//
+//                            // Add it to the stock using the server
+//                            if (dishForStock != null) server.setStock(dishForStock, Integer.parseInt(strings[2]));
+//                            if (ingredientForStock != null) server.setStock(ingredientForStock,
+//                                    Integer.parseInt(strings[2]));
+                        } else if (s.startsWith("STAFF")) {
+                            server.addStaff(s.split(":")[1]);
 
-    /**
-     * Sets up the configuration
-     * Loads all the data from the text file to the arrayLists of the server
-     *
-     * @throws IOException
-     */
-    public void setUp() throws IOException {
-
-        FileReader fileReader = new FileReader(filename);
-
-        try (BufferedReader bufferedReader = new BufferedReader(fileReader)) {
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                // System.out.println(line);
-
-
-                if (line.equals("")) continue;
-                String[] splittedLine = line.split(":");
-
-                String command = splittedLine[0];
-
-                if (command.equals("SUPPLIER")) {
-
-                    String name = splittedLine[1];
-                    Postcode postcode = new Postcode(splittedLine[2], new Restaurant("hi", new Postcode("SO16 3ZE")));
-                    Supplier supplier = new Supplier(name, postcode);
-                    suppliers.add(supplier);
-                    availableSuppliers.put(name, supplier);
-
-                } else if (command.equals("INGREDIENT")) {
-
-                    String name = splittedLine[1];
-                    String unit = splittedLine[2];
-                    String supplierName = splittedLine[3];
-                    String restockThreshold = splittedLine[4];
-                    String restockAmount = splittedLine[5];
-                    String weight = splittedLine[6];
-
-                    Supplier supplier = availableSuppliers.get(supplierName);
-                    Ingredient ingredientToAdd = new Ingredient(name, unit, supplier, Integer.parseInt(restockThreshold), Integer.parseInt(restockAmount), Integer.parseInt(weight));
-
-                    availableIngredients.put(name, ingredientToAdd);
-                    ingredients.add(ingredientToAdd);
-                    inventory.putIngredient(ingredientToAdd, 0);
-
-                } else if (command.equals("DISH")) {
-                    String name = splittedLine[1];
-                    String description = splittedLine[2];
-                    Integer price = Integer.parseInt(splittedLine[3]);
-                    Integer restockThreshold = Integer.parseInt(splittedLine[4]);
-                    Integer restockAmount = Integer.parseInt(splittedLine[5]);
-
-                    String recipeContent = splittedLine[6];
-                    Map<Ingredient, Number> recipe = getRecipe(recipeContent);
-
-                    Dish dishToAdd = new Dish(name, description, price, restockThreshold, restockAmount);
-                    dishToAdd.setRecipe(recipe);
-                    availableDishes.put(name, dishToAdd);
-                    dishes.add(dishToAdd);
-                    inventory.putDish(dishToAdd, 0);
-
-                } else if (command.equals("USER")) {
-                    String name = splittedLine[1];
-                    String password = splittedLine[2];
-                    String location = splittedLine[3];
-                    String postcode = splittedLine[4];
-
-                    Postcode userPostcode = null;
-
-                    if (availablePostcodes.containsKey(postcode)) userPostcode = availablePostcodes.get(postcode);
-
-                    User userToAdd = new User(name, password, location, userPostcode);
-                    users.add(userToAdd);
-                    availableUsers.put(name, userToAdd);
-
-
-                } else if (command.equals("POSTCODE")) {
-                    String postcode = splittedLine[1];
-
-                    Postcode postcodeToAdd = new Postcode(postcode, new Restaurant("hi", new Postcode("SO16 3ZE")));
-
-                    availablePostcodes.put(postcodeToAdd.getName(), postcodeToAdd);
-
-                    postcodes.add(postcodeToAdd);
-
-
-                } else if (command.equals("STAFF")) {
-                    String name = splittedLine[1];
-
-                    Staff staffToAdd = new Staff(name);
-                    staff.add(staffToAdd);
-
-                } else if (command.equals("DRONE")) {
-                    String speed = splittedLine[1];
-
-                    Drone droneToAdd = new Drone(Integer.parseInt(speed));
-
-                    //new Thread(droneToAdd).start();
-
-                    drones.add(droneToAdd);
-
-                } else if (command.equals("ORDER")) {
-
-                    String user = splittedLine[1];
-                    String val = splittedLine[2];
-
-                    User orderUser = null;
-
-                    if (availableUsers.containsKey(user)) {
-                        orderUser = availableUsers.get(user);
-
-                    }
-
-                    Integer id = 0;
-
-                    if (ordersId.containsKey(user)) {
-                        id = ordersId.get(user);
-                    }
-                    id++;
-                    Order orderToAdd = new Order(availableUsers.get(user), getOrder(val), id);
-                    ordersId.put(user, id);
-
-                    orders.add(orderToAdd);
-
-                } else if (command.equals("STOCK")) {
-
-                    String val = splittedLine[1];
-                    String quantity = splittedLine[2];
-
-                    if (availableIngredients.containsKey(val)) {
-
-                        Ingredient ingredientToAdd = availableIngredients.get(val);
-                        inventory.putIngredient(ingredientToAdd, Integer.parseInt(quantity));
-
-
-                    } else if (availableDishes.containsKey(val)) {
-
-                        Dish dishToAdd = availableDishes.get(val);
-                        inventory.getDishes().put(dishToAdd, Integer.parseInt(quantity));
-
-                    }
-
-                }
-
-            }
+                        } else if (s.startsWith("DRONE")) {
+                            server.addDrone(Integer.parseInt(s.split(":")[1]));
+                        }
+                    });
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Invalid config.");
         }
     }
-
-
-    /**
-     * Method that gets a Recipe from a string
-     *
-     * @param recipe
-     * @return
-     */
-    public Map<Ingredient, Number> getRecipe(String recipe) {
-
-        Map<Ingredient, Number> recipes = new HashMap<>();
-
-        String[] ingredients = recipe.split(",");
-
-        for (String currentIngredient : ingredients) {
-
-            String quantity = currentIngredient.split("\\*")[0].trim();
-            String ingredient = currentIngredient.split("\\*")[1].trim();
-
-            if (availableIngredients.containsKey(ingredient)) {
-                Ingredient ingredientToAdd = availableIngredients.get(ingredient);
-                recipes.put(ingredientToAdd, Integer.parseInt(quantity));
-
-
-            }
-
-        }
-
-
-        return recipes;
-
-    }
-
-    /**
-     * Method that gets an order from a String
-     *
-     * @param order
-     * @return
-     */
-    public HashMap<Dish, Number> getOrder(String order) {
-
-
-        HashMap<Dish, Number> orders = new HashMap<>();
-        String[] ingredients = order.split(",");
-
-        for (String currentDish : ingredients) {
-
-            String quantity = currentDish.split("\\*")[0].trim();
-            String dish = currentDish.split("\\*")[1].trim();
-
-            Dish dishToAdd = null;
-
-            if (availableDishes.containsKey(dish)) dishToAdd = availableDishes.get(dish);
-            orders.put(dishToAdd, Integer.parseInt(quantity));
-
-        }
-
-
-        return orders;
-
-
-    }
-
 }
-

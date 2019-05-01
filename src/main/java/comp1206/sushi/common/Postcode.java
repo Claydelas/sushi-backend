@@ -75,12 +75,12 @@ public class Postcode extends Model {
             JsonElement root = parser.parse(new InputStreamReader((InputStream) request.getContent()));
             JsonObject jsonObject = root.getAsJsonObject();
 
-            System.out.println("Raw GET content: " + root);
+            //System.out.println("Raw GET content: " + root);
 
             latLong.put("lat", jsonObject.get("lat").getAsDouble());
             latLong.put("long", jsonObject.get("long").getAsDouble());
 
-            System.out.println("Mapped entries: " + latLong.entrySet());
+            //System.out.println("Mapped entries: " + latLong.entrySet());
 
         } catch (IOException e) {
             e.printStackTrace();
