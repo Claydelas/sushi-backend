@@ -2,6 +2,7 @@ package comp1206.sushi.server;
 
 import comp1206.sushi.common.Dish;
 import comp1206.sushi.common.Order;
+import comp1206.sushi.common.Restaurant;
 import comp1206.sushi.common.User;
 
 import java.io.IOException;
@@ -23,30 +24,30 @@ public class Configuration {
                         } else if (s.startsWith("RESTAURANT")) {
                             String[] restaurant = s.split(":");
 
-                            server.getRestaurant().setName(restaurant[1]);
-                            server.getRestaurant().setLocation(server.getPostcodes()
+                            server.getPostcodes()
                                     .stream()
                                     .filter(postcode -> postcode.getName().equals(restaurant[2]))
-                                    .findFirst()
-                                    .get());
+                                    .findFirst().ifPresent(postcode -> server.restaurant = new Restaurant(restaurant[1], postcode));
                         } else if (s.startsWith("SUPPLIER")) {
                             String[] supplier = s.split(":");
 
-                            server.addSupplier(supplier[1], server.getPostcodes()
+                            server.getPostcodes()
                                     .stream()
                                     .filter(postcode -> postcode.getName().equals(supplier[2]))
-                                    .findFirst()
-                                    .get());
+                                    .findFirst().ifPresent(postcode -> server.addSupplier(supplier[1], postcode));
                         } else if (s.startsWith("INGREDIENT")) {
                             String[] ingredient = s.split(":");
 
-                            server.addIngredient(ingredient[1], ingredient[2],
-                                    server.getSuppliers()
-                                            .stream()
-                                            .filter(supplier -> supplier.getName().equals(ingredient[3]))
-                                            .findFirst()
-                                            .get(),
-                                    Integer.parseInt(ingredient[4]), Integer.parseInt(ingredient[5]), Integer.parseInt(ingredient[6]));
+                            server.getSuppliers()
+                                    .stream()
+                                    .filter(supplier -> supplier.getName().equals(ingredient[3]))
+                                    .findFirst().ifPresent(supplier ->
+                                    server.addIngredient(ingredient[1],
+                                            ingredient[2],
+                                            supplier,
+                                            Integer.parseInt(ingredient[4]),
+                                            Integer.parseInt(ingredient[5]),
+                                            Integer.parseInt(ingredient[6])));
                         } else if (s.startsWith("DISH")) {
                             String[] dish = s.split(":");
                             Dish newdish = server.addDish(dish[1], dish[2],
@@ -58,21 +59,17 @@ public class Configuration {
 
                             for (String ingredient : recipe) {
                                 String[] tuple = ingredient.split(" \\* ");
-
-                                server.addIngredientToDish(newdish, server.getIngredients()
-                                                .stream()
-                                                .filter(i -> i.getName().equals(tuple[1]))
-                                                .findFirst()
-                                                .get(),
-                                        Double.parseDouble(tuple[0]));
+                                server.getIngredients()
+                                        .stream()
+                                        .filter(i -> i.getName().equals(tuple[1]))
+                                        .findFirst().ifPresent(i -> server.addIngredientToDish(newdish, i, Double.parseDouble(tuple[0])));
                             }
                         } else if (s.startsWith("USER")) {
                             String[] user = s.split(":");
-                            server.users.add(new User(user[1], user[2], user[3], server.getPostcodes()
+                            server.getPostcodes()
                                     .stream()
                                     .filter(postcode -> postcode.getName().equals(user[4]))
-                                    .findFirst()
-                                    .get()));
+                                    .findFirst().ifPresent(postcode -> server.users.add(new User(user[1], user[2], user[3], postcode)));
                         } else if (s.startsWith("ORDER")) {
                             String[] order = s.split(":");
                             HashMap<Dish, Number> neworder = new HashMap<>();
@@ -82,37 +79,29 @@ public class Configuration {
                             for (String orderedDish : orderedDishes) {
                                 String[] dish = orderedDish.split(" \\* ");
 
-                                neworder.put(server.getDishes()
+                                server.getDishes()
                                         .stream()
                                         .filter(i -> i.getName().equals(dish[1]))
-                                        .findFirst()
-                                        .get(), Integer.parseInt(dish[0]));
+                                        .findFirst().ifPresent(i -> neworder.put(i, Integer.parseInt(dish[0])));
                             }
-                            Order newOrder = new Order(server.getUsers()
+                            server.getUsers()
                                     .stream()
                                     .filter(i -> i.getName().equals(order[1]))
-                                    .findFirst()
-                                    .get(), neworder);
-
-                            server.orders.add(newOrder);
-                            //server.orderQueue.add(newOrder);
+                                    .findFirst().ifPresent(user -> {
+                                Order newOrder = new Order(user, neworder);
+                                server.orders.add(newOrder);
+                                server.orderQueue.add(newOrder);
+                            });
                         } else if (s.startsWith("STOCK")) {
                             String[] stock = s.split(":");
-//                            Dish dishForStock = null;
-//                            Ingredient ingredientForStock = null;
-//
-//                            // Search through both the dishes and ingredients to check if the name matches
-//                            for (Dish dishStock : server.getDishes()) {
-//                                if (dishStock.getName().equals(strings[1])) dishForStock = dishStock;
-//                            }
-//                            for (Ingredient ingredientStock : server.getIngredients()) {
-//                                if (ingredientStock.getName().equals(strings[1])) ingredientForStock = ingredientStock;
-//                            }
-//
-//                            // Add it to the stock using the server
-//                            if (dishForStock != null) server.setStock(dishForStock, Integer.parseInt(strings[2]));
-//                            if (ingredientForStock != null) server.setStock(ingredientForStock,
-//                                    Integer.parseInt(strings[2]));
+                            server.getDishes()
+                                    .stream()
+                                    .filter(dish -> dish.getName().equals(stock[1]))
+                                    .findFirst().ifPresent(dish -> server.setStock(dish, Integer.parseInt(stock[2])));
+                            server.getIngredients()
+                                    .stream()
+                                    .filter(ingredient -> ingredient.getName().equals(stock[1]))
+                                    .findFirst().ifPresent(ingredient -> server.setStock(ingredient, Integer.parseInt(stock[2])));
                         } else if (s.startsWith("STAFF")) {
                             server.addStaff(s.split(":")[1]);
 

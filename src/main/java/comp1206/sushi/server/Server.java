@@ -1,159 +1,119 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.*;
-import comp1206.sushi.comms.OrderManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Server implements ServerInterface {
 
     private static final Logger logger = LogManager.getLogger("Server");
 
-    public Restaurant restaurant;
-    public ArrayList<Dish> dishes = new ArrayList<>();
-    public ArrayList<Drone> drones = new ArrayList<>();
-    public ArrayList<Ingredient> ingredients = new ArrayList<>();
-    public ArrayList<Order> orders = new ArrayList<>();
-    public ArrayList<Staff> staff = new ArrayList<>();
-    public ArrayList<Supplier> suppliers = new ArrayList<>();
+    // Responsible for backing up the server state to file when a change is made
+    //public DataPersistence dataPersistence = new DataPersistence();
+
+    // Instantiate the stock controllers
+    private IngredientStock ingredients = new IngredientStock(this);
+    private DishStock dishes = new DishStock(this);
+
+    //private data models
+    private ArrayList<Supplier> suppliers = new ArrayList<>();
+    private ArrayList<Postcode> postcodes = new ArrayList<>();
+    private ArrayList<Staff> staff = new ArrayList<>();
+    private ArrayList<Drone> drones = new ArrayList<>();
+
+    //public data models
     public ArrayList<User> users = new ArrayList<>();
-    public ArrayList<Postcode> postcodes = new ArrayList<>();
-    public ArrayList[] lists = {dishes, drones, ingredients, orders, staff, suppliers, users, postcodes};
+    public ArrayList<Order> orders = new ArrayList<>();
+    public Restaurant restaurant;
+
+    public ConcurrentLinkedQueue<Order> orderQueue = new ConcurrentLinkedQueue<>();
+    // A queue used by the drones to check for ingredients that need to be restocked
+    public ConcurrentLinkedQueue<Ingredient> restockIngredientQueue = new ConcurrentLinkedQueue<>();
+    // A queue used by the staff to check for dishes that need to be restocked
+    public ConcurrentLinkedQueue<Dish> restockDishQueue = new ConcurrentLinkedQueue<>();
+
+    // Stores a reference to all update listeners added so the UI can be updated when changes take place
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
 
-    private HashMap<String, User> availableUsers = new HashMap<>();
-    private HashMap<String, Ingredient> availableIngredients = new HashMap<>();
-    private HashMap<String, Integer> ordersId = new HashMap<>();
-
-    private Inventory inventory = new Inventory(staff, drones);
-    private OrderManager orderManager = new OrderManager(orders, drones);
+    public ArrayList[] lists = {dishes.getDishes(), drones, ingredients.getIngredients(), orders, staff, suppliers, users, postcodes};
 
     public Server() {
         logger.info("Starting up server...");
-
-        Postcode restaurantPostcode = new Postcode("SO17 1BJ");
-        restaurant = new Restaurant("Mock Restaurant", restaurantPostcode);
-
-        Postcode postcode1 = addPostcode("SO17 1TJ");
-        Postcode postcode2 = addPostcode("SO17 1BX");
-        Postcode postcode3 = addPostcode("SO17 2NJ");
-        Postcode postcode4 = addPostcode("SO17 1TW");
-        Postcode postcode5 = addPostcode("SO17 2LB");
-
-        Supplier supplier1 = addSupplier("Supplier 1", postcode1);
-        Supplier supplier2 = addSupplier("Supplier 2", postcode2);
-        Supplier supplier3 = addSupplier("Supplier 3", postcode3);
-
-        Ingredient ingredient1 = addIngredient("Ingredient 1", "grams", supplier1, 1, 5, 1);
-        Ingredient ingredient2 = addIngredient("Ingredient 2", "grams", supplier2, 1, 5, 1);
-        Ingredient ingredient3 = addIngredient("Ingredient 3", "grams", supplier3, 1, 5, 1);
-
-        Dish dish1 = addDish("Dish 1", "Dish 1", 1, 1, 10);
-        Dish dish2 = addDish("Dish 2", "Dish 2", 2, 1, 10);
-        Dish dish3 = addDish("Dish 3", "Dish 3", 3, 1, 10);
-
-        addIngredientToDish(dish1, ingredient1, 1);
-        addIngredientToDish(dish1, ingredient2, 2);
-        addIngredientToDish(dish2, ingredient2, 3);
-        addIngredientToDish(dish2, ingredient3, 1);
-        addIngredientToDish(dish3, ingredient1, 2);
-        addIngredientToDish(dish3, ingredient3, 1);
-
-        addStaff("Staff 1");
-        addStaff("Staff 2");
-        addStaff("Staff 3");
-
-        addDrone(1);
-        addDrone(2);
-        addDrone(3);
-
-        User user1 = new User("john", "john123", "elm street", postcode5);
-        users.add(user1);
-
-        //startStaff();
-        inventory.start();
-        orderManager.start();
-
-//        /**
-//         * On close save all the data DATA PERSISTENCE PART 9 */
-//        Runtime.getRuntime().addShutdownHook(new Thread() {
-//            public void run() {
-//                DataPersistence dataPersistence=new DataPersistence(dishes,ingredients,suppliers,staff,postcodes,users,orders,drones,inventory);
-//                dataPersistence.saveToStaffFile();
-//            }
-//        });
+        restaurant = new Restaurant("Southampton Sushi", new Postcode("SO17 1BJ"));
+        //new CommsServer(this);
     }
 
     @Override
     public List<Dish> getDishes() {
-        return this.dishes;
+        return dishes.getDishes();
     }
 
     @Override
     public Dish addDish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
         Dish newDish = new Dish(name, description, price, restockThreshold, restockAmount);
-        this.dishes.add(newDish);
-        inventory.putDish(newDish, 0);
+        dishes.addDishToStock(newDish,0);
         this.notifyUpdate();
         return newDish;
     }
 
     @Override
     public void removeDish(Dish dish) {
-        this.dishes.remove(dish);
+        dishes.removeDish(dish);
         this.notifyUpdate();
     }
 
     @Override
     public Map<Dish, Number> getDishStockLevels() {
-        return inventory.getDishes();
+        return dishes.getStock();
     }
 
     @Override
     public void setRestockingIngredientsEnabled(boolean enabled) {
-        inventory.setRestockIngredients(enabled);
+        ingredients.setRestockingEnabled(enabled);
     }
 
     @Override
     public void setRestockingDishesEnabled(boolean enabled) {
-        inventory.setRestockDishes(enabled);
+        dishes.setRestockingEnabled(enabled);
     }
 
     @Override
     public void setStock(Dish dish, Number stock) {
-        inventory.putDish(dish, stock.intValue());
+        dishes.setStockLevel(dish,stock);
+        this.notifyUpdate();
     }
 
     @Override
     public void setStock(Ingredient ingredient, Number stock) {
-        inventory.putIngredient(ingredient, stock.intValue());
+        ingredients.setStockLevel(ingredient, stock);
+        this.notifyUpdate();
     }
 
     @Override
     public List<Ingredient> getIngredients() {
-        return this.ingredients;
+        return ingredients.getIngredients();
     }
 
     @Override
     public Ingredient addIngredient(String name, String unit, Supplier supplier,
                                     Number restockThreshold, Number restockAmount, Number weight) {
+
         Ingredient mockIngredient = new Ingredient(name, unit, supplier, restockThreshold, restockAmount, weight);
-        this.ingredients.add(mockIngredient);
-        availableIngredients.put(name, mockIngredient);
-        inventory.putIngredient(mockIngredient, 0);
+        ingredients.addIngredientToStock(mockIngredient,0);
+
         this.notifyUpdate();
         return mockIngredient;
     }
 
     @Override
     public void removeIngredient(Ingredient ingredient) throws UnableToDeleteException {
-//        if (dishes.stream().anyMatch(dish -> dish.getRecipe().containsKey(ingredient)))
+//        if (dishes.getDishes().stream().anyMatch(dish -> dish.getRecipe().containsKey(ingredient)))
 //            throw new UnableToDeleteException("part of a recipe.");
-        availableIngredients.remove(ingredient.getName());
-        this.ingredients.remove(ingredient);
+        ingredients.removeStock(ingredient);
         this.notifyUpdate();
     }
 
@@ -172,7 +132,7 @@ public class Server implements ServerInterface {
 
     @Override
     public void removeSupplier(Supplier supplier) throws UnableToDeleteException {
-        if (ingredients.stream().anyMatch(ingredient -> ingredient.getSupplier().equals(supplier)))
+        if (ingredients.getIngredients().stream().anyMatch(ingredient -> ingredient.getSupplier().equals(supplier)))
             throw new UnableToDeleteException("ingredients depend on this supplier.");
         this.suppliers.remove(supplier);
         this.notifyUpdate();
@@ -238,7 +198,7 @@ public class Server implements ServerInterface {
 
     @Override
     public Map<Ingredient, Number> getIngredientStockLevels() {
-        return inventory.getIngredients();
+        return ingredients.getStock();
     }
 
     @Override
@@ -421,10 +381,4 @@ public class Server implements ServerInterface {
     public Restaurant getRestaurant() {
         return restaurant;
     }
-
-//    private void startStaff() {
-//        for (Staff currentStaff : staff) {
-//            new Thread(currentStaff).start();
-//        }
-//    }
 }

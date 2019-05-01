@@ -14,6 +14,7 @@ public class Dish extends Model {
 	private Map <Ingredient,Number> recipe;
 	private Number restockThreshold;
 	private Number restockAmount;
+	int noRestocking;
 
 	public Dish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
 		this.name = name;

@@ -11,6 +11,7 @@ public class Ingredient extends Model {
 	private Number restockThreshold;
 	private Number restockAmount;
 	private Number weight;
+	public int noRestocking;
 
 	public Ingredient(String name, String unit, Supplier supplier, Number restockThreshold,
 			Number restockAmount, Number weight) {
