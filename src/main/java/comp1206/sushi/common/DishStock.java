@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Manages the dish stock. This includes adding new dishes to stock and triggering restocking by telling staff to
  * prepare more.
- * @author Jack Corbett
  */
 public class DishStock {
 

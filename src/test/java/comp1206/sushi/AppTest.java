@@ -1,6 +1,5 @@
 package comp1206.sushi;
 
-import comp1206.sushi.server.Configuration;
 import comp1206.sushi.server.Server;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -54,7 +53,7 @@ public class AppTest
         server.getIngredients().forEach(ingredient -> logger.log(Level.INFO,"Ingredient : " + ingredient.getName() + " -> " + ingredient.getUnit() + " -> " + ingredient.getSupplier() + " -> " + ingredient.getRestockThreshold() + " -> " + ingredient.getRestockAmount() + " -> " + ingredient.getWeight()));
         server.getDishes().forEach(dish -> logger.log(Level.INFO,"Dish : " + dish.getName() + " -> " + dish.getDescription() + " -> " + dish.getPrice() + " -> " + dish.getRestockThreshold() + " -> " + dish.getRestockAmount() + " -> " + dish.getRecipe()));
         server.getUsers().forEach(user -> logger.log(Level.INFO, "User : " + user.getName() + " -> " + user.getPassword() + " -> " + user.getAddress() + " -> " + user.getPostcode()));
-        server.getOrders().forEach(order -> logger.log(Level.INFO, "Order : " + order.getUser() + " -> " + order.getOrders()));
+        server.getOrders().forEach(order -> logger.log(Level.INFO, "Order : " + order.getUser() + " -> " + order.getItems()));
         logger.log(Level.INFO,"Staff : " + server.getStaff());
         logger.log(Level.INFO,"Postcodes : " + server.getDrones());
     }

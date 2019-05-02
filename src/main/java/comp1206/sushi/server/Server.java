@@ -132,8 +132,8 @@ public class Server implements ServerInterface {
 
     @Override
     public void removeSupplier(Supplier supplier) throws UnableToDeleteException {
-        if (ingredients.getIngredients().stream().anyMatch(ingredient -> ingredient.getSupplier().equals(supplier)))
-            throw new UnableToDeleteException("ingredients depend on this supplier.");
+//        if (ingredients.getIngredients().stream().anyMatch(ingredient -> ingredient.getSupplier().equals(supplier)))
+//            throw new UnableToDeleteException("ingredients depend on this supplier.");
         this.suppliers.remove(supplier);
         this.notifyUpdate();
     }
@@ -145,15 +145,17 @@ public class Server implements ServerInterface {
 
     @Override
     public Drone addDrone(Number speed) {
-        Drone mock = new Drone(speed);
-        this.drones.add(mock);
-        return mock;
+        Drone drone = new Drone(this, ingredients, dishes, speed.intValue());
+        new Thread(drone).start();
+        drones.add(drone);
+        notifyUpdate();
+        return drone;
     }
 
     @Override
     public void removeDrone(Drone drone) throws UnableToDeleteException {
-        if (drone.getStatus().equals("Flying"))
-            throw new UnableToDeleteException("drone mid-flight.");
+//        if (drone.getStatus().equals("Flying"))
+//            throw new UnableToDeleteException("drone mid-flight.");
         this.drones.remove(drone);
         this.notifyUpdate();
     }
@@ -165,15 +167,16 @@ public class Server implements ServerInterface {
 
     @Override
     public Staff addStaff(String name) {
-        Staff mock = new Staff(name);
-        this.staff.add(mock);
-        return mock;
+        Staff staff = new Staff(this, name, dishes, ingredients);
+        new Thread(staff).start();
+        this.staff.add(staff);
+        return staff;
     }
 
     @Override
     public void removeStaff(Staff staff) throws UnableToDeleteException {
-        if (staff.getStatus().equals("Working"))
-            throw new UnableToDeleteException("must be idle.");
+//        if (staff.getStatus().equals("Working"))
+//            throw new UnableToDeleteException("must be idle.");
         this.staff.remove(staff);
         this.notifyUpdate();
     }
@@ -185,8 +188,8 @@ public class Server implements ServerInterface {
 
     @Override
     public void removeOrder(Order order) throws UnableToDeleteException {
-        if (order.getStatus().equals("Pending"))
-            throw new UnableToDeleteException("must be complete.");
+//        if (order.getStatus().equals("Pending"))
+//            throw new UnableToDeleteException("must be complete.");
         this.orders.remove(order);
         this.notifyUpdate();
     }
@@ -249,13 +252,12 @@ public class Server implements ServerInterface {
         return mock;
     }
 
-    //COMPLETED
     @Override
     public void removePostcode(Postcode postcode) throws UnableToDeleteException {
-        if (suppliers.stream().anyMatch(supplier -> supplier.getPostcode().equals(postcode)))
-            throw new UnableToDeleteException("used by a supplier.");
-        if (users.stream().anyMatch(user -> user.getPostcode().equals(postcode)))
-            throw new UnableToDeleteException("used by a user.");
+//        if (suppliers.stream().anyMatch(supplier -> supplier.getPostcode().equals(postcode)))
+//            throw new UnableToDeleteException("used by a supplier.");
+//        if (users.stream().anyMatch(user -> user.getPostcode().equals(postcode)))
+//            throw new UnableToDeleteException("used by a user.");
         this.postcodes.remove(postcode);
         this.notifyUpdate();
     }
@@ -290,7 +292,7 @@ public class Server implements ServerInterface {
 
     @Override
     public boolean isOrderComplete(Order order) {
-        return order.getOrderComplete();
+        return order.getComplete();
     }
 
     @Override

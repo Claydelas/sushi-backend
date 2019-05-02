@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Manages the ingredient stock. This includes adding new ingredients and triggering restocking by telling drones to
  * collect more.
- * @author Jack Corbett
  */
 public class IngredientStock {
 

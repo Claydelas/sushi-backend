@@ -1,6 +1,5 @@
 package comp1206.sushi.common;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -8,80 +7,62 @@ import java.util.Random;
 
 import comp1206.sushi.common.Order;
 
-public class Order extends Model implements Serializable {
+public class Order extends Model {
 
-    private User user;
-    private String status;
-    private float cost;
-    private boolean orderComplete;
-    private HashMap<Dish, Number> orders;
+	private User user;
+	private HashMap<Dish, Number> items;
+	private boolean complete;
+	private String status;
+	
+	public Order(User user, HashMap<Dish, Number> items) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");  
+		LocalDateTime now = LocalDateTime.now();  
+		this.name = dtf.format(now);
+		this.items = items;
+		this.user = user;
+		this.complete = false;
+		this.status = "Processing";
+	}
 
-    public Order(User user, HashMap<Dish, Number> orders) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        this.name = dtf.format(now);
-        this.user = user;
-        this.orders = orders;
-        status = "Pending";
-        cost = calculateCost();
-        orderComplete = false;
-    }
+	public Number getDistance() {
+		return user.getPostcode().getDistance();
+	}
 
-    public Number getDistance() {
-        return user.getDistance();
-    }
+	@Override
+	public String getName() {
+		return this.name;
+	}
 
-    @Override
-    public String getName() {
-        return this.name;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public synchronized String getStatus() {
-        return status;
-    }
-
-    public synchronized void setStatus(String status) {
-        notifyUpdate("status", this.status, status);
-        this.status = status;
-    }
-
-    public float getCost() {
-        return cost;
-    }
-
-    public void setCost(Integer cost) {
-        notifyUpdate("Cost", this.cost, cost);
-        this.cost = cost;
-    }
-
-    public HashMap<Dish, Number> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(HashMap<Dish, Number> orders) {
-        notifyUpdate("Order", this.orders, orders);
-        this.orders = orders;
-    }
-
-    public synchronized boolean getOrderComplete() {
-        return orderComplete;
-    }
-
-    public synchronized void setOrderComplete(boolean orderComplete) {
-        this.orderComplete = orderComplete;
-    }
-
-    //calculates cost and returns as float for rounding
-    private float calculateCost() {
-        double sum = 0;
-        for (HashMap.Entry<Dish, Number> entry : orders.entrySet()) {
-            sum += entry.getKey().getPrice().doubleValue() * entry.getValue().doubleValue();
-        }
-        return (float) sum;
-    }
-
-    public User getUser() {
-        return user;
-    }
+	public void setStatus(String status) {
+		notifyUpdate("status",this.status,status);
+		this.status = status;
+	}
+	public User getUser() {
+		return user;
+	}
+	public HashMap<Dish, Number> getItems() {
+		return items;
+	}
+	public boolean getComplete() {
+		return complete;
+	}
+	public double getCost() {
+		double total = 0.0;
+		if (!items.isEmpty()) {
+			for (Dish dish : items.keySet()) {
+				total += (dish.getPrice().doubleValue() * items.get(dish).intValue());
+			}
+		}
+		return total;
+	}
+	public void setComplete() {
+		setStatus("Complete");
+		notifyUpdate("complete", complete, true);
+		this.complete = true;
+	}
 
 }
