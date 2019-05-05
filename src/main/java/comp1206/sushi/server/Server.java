@@ -1,6 +1,7 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.*;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -246,7 +247,10 @@ public class Server implements ServerInterface {
 
     @Override
     public Postcode addPostcode(String code) {
-        Postcode mock = new Postcode(code, restaurant);
+        Postcode mock;
+        if (postcodes.isEmpty() || restaurant == null) mock = new Postcode(code);
+        else mock = new Postcode(code, restaurant);
+
         this.postcodes.add(mock);
         this.notifyUpdate();
         return mock;
@@ -279,7 +283,7 @@ public class Server implements ServerInterface {
             list.clear();
         }
         new Configuration(filename, this);
-        System.out.println("Loaded configuration: " + filename);
+        logger.log(Level.INFO,"Loaded configuration: " + filename);
     }
 
     @Override
@@ -382,5 +386,11 @@ public class Server implements ServerInterface {
     @Override
     public Restaurant getRestaurant() {
         return restaurant;
+    }
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+        postcodes.forEach(postcode -> postcode.calculateDistance(restaurant));
+        this.notifyUpdate();
     }
 }

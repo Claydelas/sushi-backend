@@ -27,7 +27,7 @@ public class Configuration {
                             server.getPostcodes()
                                     .stream()
                                     .filter(postcode -> postcode.getName().equals(restaurant[2]))
-                                    .findFirst().ifPresent(postcode -> server.restaurant = new Restaurant(restaurant[1], postcode));
+                                    .findFirst().ifPresent(postcode -> server.setRestaurant(new Restaurant(restaurant[1], postcode)));
                         } else if (s.startsWith("SUPPLIER")) {
                             String[] supplier = s.split(":");
 

@@ -47,7 +47,7 @@ public class Postcode extends Model {
         return this.latLong;
     }
 
-    private void calculateDistance(Restaurant restaurant) {
+    public void calculateDistance(Restaurant restaurant) {
         Postcode destination = restaurant.getLocation();
 
         double dLat = Math.toRadians(getLatLong().get("lat") - destination.getLatLong().get("lat"));

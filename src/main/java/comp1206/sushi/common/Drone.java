@@ -102,7 +102,7 @@ public class Drone extends Model implements Runnable {
 			Order order = server.orderQueue.poll();
 
 			if (order != null) {
-				Boolean deliver = true;
+				boolean deliver = true;
 				// Check if we have enough stock
 				for (Map.Entry<Dish, Number> entry : order.getItems().entrySet()) {
 					Dish dish = entry.getKey();
