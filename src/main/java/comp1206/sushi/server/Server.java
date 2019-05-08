@@ -1,6 +1,7 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.*;
+import comp1206.sushi.comms.CommunicationLayer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +46,8 @@ public class Server implements ServerInterface {
     public Server() {
         logger.info("Starting up server...");
         restaurant = new Restaurant("Southampton Sushi", new Postcode("SO17 1BJ"));
-        new ServerComms(this);
+        //new ServerComms(this);
+        new CommunicationLayer(this);
     }
 
     @Override
@@ -187,10 +189,10 @@ public class Server implements ServerInterface {
         return this.orders;
     }
 
-    public List<Order> getUserOrders(String username){
+    public List<Order> getUserOrders(User username){
         List<Order> orders = new ArrayList<>();
         this.orders.forEach(order -> {
-            if (order.getUser().getName().equals(username))
+            if (order.getUser().equals(username))
                 orders.add(order);
         });
         return orders;

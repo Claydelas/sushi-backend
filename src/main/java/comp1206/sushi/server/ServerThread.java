@@ -111,7 +111,7 @@ class ServerThread extends Thread {
                         os.writeObject(server.getDishes());
                     }
                     if (command[0].contains("ORDERS")){
-                        os.writeObject(server.getUserOrders(command[1]));
+                        os.writeObject(server.getUserOrders(new User("hi","h","i",new Postcode("SO16 3ZE"))));
                     }
                 } else if (command[0].startsWith("BASKET")) {
                     Order order = new Order(user, user.getBasket());

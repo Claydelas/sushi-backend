@@ -5,7 +5,6 @@ import java.io.Serializable;
 /**
  * Message Class
  * Implements Serializable
- *
  */
 public class Message implements Serializable {
 
@@ -21,6 +20,7 @@ public class Message implements Serializable {
 
     /**
      * Constructors
+     *
      * @param command
      * @param object
      */
@@ -29,19 +29,40 @@ public class Message implements Serializable {
         this.object = object;
     }
 
-    public Message(String command,Object object,Object secondObject,Object thirdObject){
-        this.command=command;
-        this.object=object;
-        this.secondObject=secondObject;
-        this.thirdObject=thirdObject;
+    public Message(String command) {
+        this.command = command;
+    }
+
+    public Message(String command, Object object, Object secondObject) {
+        this.command = command;
+        this.object = object;
+        this.secondObject = secondObject;
+    }
+
+    public Message(String command, Object object, Object secondObject, Object thirdObject) {
+        this.command = command;
+        this.object = object;
+        this.secondObject = secondObject;
+        this.thirdObject = thirdObject;
     }
 
     /**
      * Getters
+     *
      * @return
      */
-    public Object getObject(){
+    public Object getObject() {
         return object;
+    }
+
+    /**
+     * Setters
+     *
+     * @param object
+     */
+
+    public void setObject(Object object) {
+        this.object = object;
     }
 
     public Object getSecondObject() {
@@ -52,18 +73,8 @@ public class Message implements Serializable {
         return thirdObject;
     }
 
-
     public String getCommand() {
         return command;
-    }
-
-    /**
-     * Setters
-     * @param object
-     */
-
-    public void setObject(Object object) {
-        this.object = object;
     }
 
     public void setCommand(String command) {
