@@ -18,7 +18,7 @@ public class Configuration {
             stream
                     .filter(s -> !s.isBlank())
                     .forEach(s -> {
-                        System.out.println(s);
+                        //System.out.println(s);
                         if (s.startsWith("POSTCODE")) {
                             server.addPostcode(s.split(":")[1]);
                         } else if (s.startsWith("RESTAURANT")) {
@@ -109,6 +109,7 @@ public class Configuration {
                             server.addDrone(Integer.parseInt(s.split(":")[1]));
                         }
                     });
+            server.notifyUpdate();
         } catch (IOException e) {
             System.err.println("Invalid config.");
         }

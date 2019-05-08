@@ -1,8 +1,8 @@
 package comp1206.sushi.common;
 
-import comp1206.sushi.common.Supplier;
+import java.io.Serializable;
 
-public class Supplier extends Model {
+public class Supplier extends Model implements Serializable {
 
 	private String name;
 	private Postcode postcode;

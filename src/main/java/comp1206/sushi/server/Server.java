@@ -45,7 +45,7 @@ public class Server implements ServerInterface {
     public Server() {
         logger.info("Starting up server...");
         restaurant = new Restaurant("Southampton Sushi", new Postcode("SO17 1BJ"));
-        //new CommsServer(this);
+        new ServerComms(this);
     }
 
     @Override
@@ -185,6 +185,15 @@ public class Server implements ServerInterface {
     @Override
     public List<Order> getOrders() {
         return this.orders;
+    }
+
+    public List<Order> getUserOrders(String username){
+        List<Order> orders = new ArrayList<>();
+        this.orders.forEach(order -> {
+            if (order.getUser().getName().equals(username))
+                orders.add(order);
+        });
+        return orders;
     }
 
     @Override

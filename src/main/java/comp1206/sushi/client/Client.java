@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import comp1206.sushi.common.*;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,53 +17,64 @@ public class Client implements ClientInterface {
     public ArrayList<User> users = new ArrayList<>();
     public ArrayList<Order> orders = new ArrayList<>();
     public ArrayList<Dish> dishes = new ArrayList<>();
-    public Restaurant restaurant;
-    private ArrayList<Postcode> postcodes = new ArrayList<>();
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
+    private ClientComms client;
 
     public Client() {
         logger.info("Starting up client...");
+        client = new ClientComms();
     }
 
     @Override
     public Restaurant getRestaurant() {
-        return restaurant;
+        client.sendMessage("GET RESTAURANT");
+        return (Restaurant) client.receiveMessage();
     }
 
     @Override
     public String getRestaurantName() {
-        return restaurant.getName();
+        client.sendMessage("GET RESTAURANT_NAME");
+        return client.receiveMessage().toString();
     }
 
     @Override
     public Postcode getRestaurantPostcode() {
-        return restaurant.getLocation();
+        client.sendMessage("GET RESTAURANT_LOCATION");
+        return (Postcode) client.receiveMessage();
     }
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-        User user = new User(username, password, address, postcode);
-        users.add(user);
-        return user;
+        client.sendMessage("USER REGISTER:" + username + ":" + password + ":" + address + ":" + postcode);
+        Object response = client.receiveMessage();
+        if (response.toString().equals("FAIL")){
+            logger.log(Level.WARN,"User registration failed.");
+            return null;
+        }
+        return (User) response;
     }
 
     @Override
     public User login(String username, String password) {
-        for (User user : users) {
-            if (user.getName().equals(username) && user.getPassword().equals(password))
-                return user;
+        client.sendMessage("USER LOGIN:" + username + ":" + password);
+        Object response = client.receiveMessage();
+        if (response.toString().equals("FAIL")){
+            logger.log(Level.WARN,"User login failed.");
+            return null;
         }
-        return null;
+        return (User) response;
     }
 
     @Override
     public List<Postcode> getPostcodes() {
-        return postcodes;
+        client.sendMessage("GET POSTCODES");
+        return (List<Postcode>) client.receiveMessage();
     }
 
     @Override
     public List<Dish> getDishes() {
-        return dishes;
+        client.sendMessage("GET DISHES");
+        return (List<Dish>) client.receiveMessage();
     }
 
     @Override
@@ -82,7 +94,7 @@ public class Client implements ClientInterface {
 
     @Override
     public Number getBasketCost(User user) {
-        Double totalCost = 0.0;
+        double totalCost = 0;
         HashMap<Dish, Number> basket = user.getBasket();
         for (Dish dish : basket.keySet()) {
             totalCost += (dish.getPrice().doubleValue() * basket.get(dish).intValue());
@@ -102,10 +114,8 @@ public class Client implements ClientInterface {
 
     @Override
     public Order checkoutBasket(User user) {
-        Order order = new Order(user, user.getBasket());
-        orders.add(order);
-        user.clearBasket();
-        return order;
+        client.sendMessage("BASKET CHECKOUT");
+        return (Order) client.receiveMessage();
     }
 
     @Override
@@ -113,14 +123,11 @@ public class Client implements ClientInterface {
         user.clearBasket();
     }
 
+    // FIXME: 08/05/2019
     @Override
     public List<Order> getOrders(User user) {
-        ArrayList<Order> userOrders = new ArrayList<>();
-        for (Order order : orders) {
-            if (order.getUser().equals(user))
-                userOrders.add(order);
-        }
-        return userOrders;
+        client.sendMessage("GET ORDERS:" + user);
+        return (List<Order>) client.receiveMessage();
     }
 
     @Override
@@ -154,5 +161,4 @@ public class Client implements ClientInterface {
             updateListener.updated(new UpdateEvent());
         }
     }
-
 }

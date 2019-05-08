@@ -1,6 +1,8 @@
 package comp1206.sushi.common;
 
-public class Restaurant {
+import java.io.Serializable;
+
+public class Restaurant implements Serializable {
 
 	private String name;
 	private Postcode location;
