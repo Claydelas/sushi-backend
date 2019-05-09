@@ -60,6 +60,7 @@ public class Order extends Model implements Serializable {
 				total += (dish.getPrice().doubleValue() * items.get(dish).intValue());
 			}
 		}
+		notifyUpdate();
 		return total;
 	}
 	/**

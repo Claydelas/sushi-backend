@@ -33,6 +33,7 @@ public class Staff extends Model implements Runnable {
 				// Check there are enough ingredients
 				for (Ingredient ingredient : dish.getRecipe().keySet()) {
 					if (ingredient != null) {
+						if(ingredientStock.getStock().keySet().contains(ingredient))
 						if (ingredientStock.getStock().get(ingredient).intValue() <
 								dish.getRecipe().get(ingredient).intValue()) {
 							makeDish = false;

@@ -1,15 +1,15 @@
 package comp1206.sushi.client;
 
+import comp1206.sushi.common.*;
+import comp1206.sushi.comms.ClientComms;
+import comp1206.sushi.comms.Message;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import comp1206.sushi.common.*;
-import comp1206.sushi.comms.ClientSocket;
-import comp1206.sushi.comms.Message;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Client implements ClientInterface {
 
@@ -19,81 +19,48 @@ public class Client implements ClientInterface {
     public ArrayList<Order> orders = new ArrayList<>();
     public ArrayList<Dish> dishes = new ArrayList<>();
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
-    //private ClientComms client;
-    private ClientSocket client;
+    private ClientComms client;
 
     public Client() {
         logger.info("Starting up client...");
-        //client = new ClientComms();
-        client = new ClientSocket();
+        client = new ClientComms("127.0.0.1", 8888);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> client.disconnect()));
     }
 
     @Override
     public Restaurant getRestaurant() {
-//        client.sendMessage("GET RESTAURANT");
-//        return (Restaurant) client.receiveMessage();
-        client.sendMessage(new Message("GET_RESTAURANT"));
-        return (Restaurant) client.receiveMessage().getObject();
+        //client.sendMessage("");
+        return null;
     }
 
     @Override
     public String getRestaurantName() {
-//        client.sendMessage("GET RESTAURANT_NAME");
-//        return client.receiveMessage().toString();
-        return  getRestaurant().getName();
+        return getRestaurant().getName();
     }
 
     @Override
     public Postcode getRestaurantPostcode() {
-//        client.sendMessage("GET RESTAURANT_LOCATION");
-//        return (Postcode) client.receiveMessage();
         return getRestaurant().getLocation();
     }
 
     @Override
     public User register(String username, String password, String address, Postcode postcode) {
-//        client.sendMessage("USER REGISTER:" + username + ":" + password + ":" + address + ":" + postcode);
-//        Object response = client.receiveMessage();
-//        if (response.toString().equals("FAIL")){
-//            logger.log(Level.WARN,"User registration failed.");
-//            return null;
-//        }
-//        return (User) response;
-        User user = new User(username, password, address, postcode);
-        client.sendMessage(new Message("REGISTER", user));
-        if (client.receiveMessage().getCommand().equals("SUCCESS")) return user;
         return null;
     }
 
     @Override
     public User login(String username, String password) {
-//        client.sendMessage("USER LOGIN:" + username + ":" + password);
-//        Object response = client.receiveMessage();
-//        if (response.toString().equals("FAIL")){
-//            logger.log(Level.WARN,"User login failed.");
-//            return null;
-//        }
-//        return (User) response;
-        client.sendMessage(new Message("LOGIN", username, password));
-        Message response = client.receiveMessage();
-        if (response.getCommand().equals("SUCCESS")) return (User) response.getObject();
         return null;
     }
 
     @Override
     public List<Postcode> getPostcodes() {
-//        client.sendMessage("GET POSTCODES");
-//        return (List<Postcode>) client.receiveMessage();
-        client.sendMessage(new Message("GET_POSTCODES"));
-        return (ArrayList<Postcode>) client.receiveMessage().getObject();
+        return null;
     }
 
     @Override
     public List<Dish> getDishes() {
-//        client.sendMessage("GET DISHES");
-//        return (List<Dish>) client.receiveMessage();
-        client.sendMessage(new Message("GET_DISHES"));
-        return (ArrayList<Dish>) client.receiveMessage().getObject();
+        return null;
     }
 
     @Override
@@ -133,10 +100,7 @@ public class Client implements ClientInterface {
 
     @Override
     public Order checkoutBasket(User user) {
-//        client.sendMessage("BASKET CHECKOUT");
-//        return (Order) client.receiveMessage();
-        client.sendMessage(new Message("CHECKOUT"));
-        return (Order) client.receiveMessage().getObject();
+        return null;
     }
 
     @Override
@@ -147,10 +111,7 @@ public class Client implements ClientInterface {
     // FIXME: 08/05/2019
     @Override
     public List<Order> getOrders(User user) {
-//        client.sendMessage("GET ORDERS:" + user);
-//        return (List<Order>) client.receiveMessage();
-        client.sendMessage(new Message("GET_ORDERS", user));
-        return (ArrayList<Order>) client.receiveMessage().getObject();
+        return null;
     }
 
     @Override
@@ -183,5 +144,6 @@ public class Client implements ClientInterface {
         for (UpdateListener updateListener : listeners) {
             updateListener.updated(new UpdateEvent());
         }
+        client.sendMessage(new Message(Message.BACKUP, "UPDATE"));
     }
 }

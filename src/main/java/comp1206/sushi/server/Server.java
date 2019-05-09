@@ -1,12 +1,16 @@
 package comp1206.sushi.server;
 
 import comp1206.sushi.common.*;
-import comp1206.sushi.comms.CommunicationLayer;
+import comp1206.sushi.comms.ServerComms;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -15,7 +19,7 @@ public class Server implements ServerInterface {
     private static final Logger logger = LogManager.getLogger("Server");
 
     // Responsible for backing up the server state to file when a change is made
-    //public DataPersistence dataPersistence = new DataPersistence();
+    public DataPersistence dataPersistence = new DataPersistence(this);
 
     // Instantiate the stock controllers
     private IngredientStock ingredients = new IngredientStock(this);
@@ -41,13 +45,13 @@ public class Server implements ServerInterface {
     // Stores a reference to all update listeners added so the UI can be updated when changes take place
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
 
-    public ArrayList[] lists = {dishes.getDishes(), drones, ingredients.getIngredients(), orders, staff, suppliers, users, postcodes};
+    public ArrayList[] lists = {drones, orders, staff, suppliers, users, postcodes};
 
     public Server() {
         logger.info("Starting up server...");
         restaurant = new Restaurant("Southampton Sushi", new Postcode("SO17 1BJ"));
-        //new ServerComms(this);
-        new CommunicationLayer(this);
+        if (Files.exists(Paths.get("backup.txt"))) loadConfiguration("backup.txt");
+        new ServerComms(this,8888);
     }
 
     @Override
@@ -189,10 +193,10 @@ public class Server implements ServerInterface {
         return this.orders;
     }
 
-    public List<Order> getUserOrders(User username){
+    public List<Order> getUserOrders(User user){
         List<Order> orders = new ArrayList<>();
         this.orders.forEach(order -> {
-            if (order.getUser().equals(username))
+            if (order.getUser().getName().equals(user.getName()))
                 orders.add(order);
         });
         return orders;
@@ -290,9 +294,13 @@ public class Server implements ServerInterface {
 
     @Override
     public void loadConfiguration(String filename) {
+        orders.forEach(Order::setCancelled);
         for (ArrayList list : lists) {
             list.clear();
         }
+        orderQueue.clear();
+        restockDishQueue.clear();
+        restockIngredientQueue.clear();
         new Configuration(filename, this);
         logger.log(Level.INFO,"Loaded configuration: " + filename);
     }
@@ -367,6 +375,7 @@ public class Server implements ServerInterface {
     @Override
     public void notifyUpdate() {
         this.listeners.forEach(listener -> listener.updated(new UpdateEvent()));
+        dataPersistence.backup();
     }
 
     @Override

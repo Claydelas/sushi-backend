@@ -3,6 +3,10 @@ package comp1206.sushi;
 import comp1206.sushi.client.Client;
 import comp1206.sushi.common.Postcode;
 import comp1206.sushi.common.Restaurant;
+import comp1206.sushi.common.User;
+import comp1206.sushi.comms.ClientComms;
+import comp1206.sushi.comms.Message;
+import comp1206.sushi.comms.ServerComms;
 import comp1206.sushi.server.Server;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -67,13 +71,25 @@ public class AppTest
 //        System.out.println(client.getRestaurantPostcode() + " <---> " + server.getRestaurantPostcode());
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO16 3ZE")));
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO17 1BJ")));
-        server.loadConfiguration("Configuration.txt");
-        System.out.println(client.getRestaurant());
+//        server.loadConfiguration("Configuration.txt");
+//        System.out.println(client.getRestaurant());
 //        server.getUsers().forEach(user -> System.out.println(client.getOrders(user)));
 //        System.out.println(client.getPostcodes());
 //        System.out.println(client.getDishes());
 //        System.out.println(client.getRestaurantPostcode() + " <---> " + server.getRestaurantPostcode());
-//        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO16 3ZE")).getDistance());
-//        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO17 1BJ")).getDistance());
+//        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO16 3ZE",client.getRestaurant())).getDistance());
+//        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO17 1BJ",client.getRestaurant())).getDistance());
+    }
+    public void testBasicComms(){
+        Server server = new Server();
+        server.loadConfiguration("Configuration.txt");
+        ClientComms clientComms = new ClientComms("127.0.0.1",8888);
+        clientComms.sendMessage(new Message(Message.USERS,"GET"));
+        System.out.println(clientComms.receiveMessage());
+    }
+
+    public void testConnect(){
+        //ClientComms clientComms = new ClientComms("127.0.0.1",8888);
+        //clientComms.sendMessage(new Message(Message.GET_RESTAURANT,"bye"));
     }
 }

@@ -107,6 +107,7 @@ public class Drone extends Model implements Runnable {
 				for (Map.Entry<Dish, Number> entry : order.getItems().entrySet()) {
 					Dish dish = entry.getKey();
 					Number amount = entry.getValue();
+					if(dishStock.getStock().keySet().contains(dish))
 					if (dishStock.getStock().get(dish).intValue() < amount.intValue()) {
 						deliver = false;
 					}

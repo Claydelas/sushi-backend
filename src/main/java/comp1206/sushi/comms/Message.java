@@ -2,82 +2,33 @@ package comp1206.sushi.comms;
 
 import java.io.Serializable;
 
-/**
- * Message Class
- * Implements Serializable
- */
 public class Message implements Serializable {
 
+    public static final int USERS = 0, MESSAGE = 1, LOGOUT = 2, BACKUP = 3;
+    private int type;
+    private String message;
+    private Object response;
 
-    /**
-     * Member variables
-     */
-    private String command;
-    private Object object;
-    private Object secondObject;
-    private Object thirdObject;
-
-
-    /**
-     * Constructors
-     *
-     * @param command
-     * @param object
-     */
-    public Message(String command, Object object) {
-        this.command = command;
-        this.object = object;
+    // constructor
+    public Message(int type, String message) {
+        this.type = type;
+        this.message = message;
     }
 
-    public Message(String command) {
-        this.command = command;
+    public Message(Object response){
+        this.response = response;
     }
 
-    public Message(String command, Object object, Object secondObject) {
-        this.command = command;
-        this.object = object;
-        this.secondObject = secondObject;
+    int getType() {
+        return type;
     }
 
-    public Message(String command, Object object, Object secondObject, Object thirdObject) {
-        this.command = command;
-        this.object = object;
-        this.secondObject = secondObject;
-        this.thirdObject = thirdObject;
+    String getMessage() {
+        return message;
     }
 
-    /**
-     * Getters
-     *
-     * @return
-     */
-    public Object getObject() {
-        return object;
-    }
-
-    /**
-     * Setters
-     *
-     * @param object
-     */
-
-    public void setObject(Object object) {
-        this.object = object;
-    }
-
-    public Object getSecondObject() {
-        return secondObject;
-    }
-
-    public Object getThirdObject() {
-        return thirdObject;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public void setCommand(String command) {
-        this.command = command;
+    public Object getResponse() {
+        if (response != null) return response;
+        else return "No server response.";
     }
 }

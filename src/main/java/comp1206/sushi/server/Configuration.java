@@ -37,39 +37,44 @@ public class Configuration {
                                     .findFirst().ifPresent(postcode -> server.addSupplier(supplier[1], postcode));
                         } else if (s.startsWith("INGREDIENT")) {
                             String[] ingredient = s.split(":");
-
-                            server.getSuppliers()
-                                    .stream()
-                                    .filter(supplier -> supplier.getName().equals(ingredient[3]))
-                                    .findFirst().ifPresent(supplier ->
-                                    server.addIngredient(ingredient[1],
-                                            ingredient[2],
-                                            supplier,
-                                            Integer.parseInt(ingredient[4]),
-                                            Integer.parseInt(ingredient[5]),
-                                            Integer.parseInt(ingredient[6])));
+                            if (server.getIngredients().stream().noneMatch(i -> i.getName().equals(ingredient[1]))) {
+                                server.getSuppliers()
+                                        .stream()
+                                        .filter(supplier -> supplier.getName().equals(ingredient[3]))
+                                        .findFirst().ifPresent(supplier -> server.addIngredient(
+                                        ingredient[1],
+                                        ingredient[2],
+                                        supplier,
+                                        Integer.parseInt(ingredient[4]),
+                                        Integer.parseInt(ingredient[5]),
+                                        Integer.parseInt(ingredient[6])));
+                            }
                         } else if (s.startsWith("DISH")) {
                             String[] dish = s.split(":");
-                            Dish newdish = server.addDish(dish[1], dish[2],
-                                    Double.parseDouble(dish[3]),
-                                    Integer.parseInt(dish[4]),
-                                    Integer.parseInt(dish[5]));
+                            if (server.getDishes().stream().noneMatch(d -> d.getName().equals(dish[1]))) {
+                                Dish newdish = server.addDish(dish[1], dish[2],
+                                        Double.parseDouble(dish[3]),
+                                        Integer.parseInt(dish[4]),
+                                        Integer.parseInt(dish[5]));
 
-                            String[] recipe = dish[6].split(",");
+                                String[] recipe = dish[6].split(",");
 
-                            for (String ingredient : recipe) {
-                                String[] tuple = ingredient.split(" \\* ");
-                                server.getIngredients()
-                                        .stream()
-                                        .filter(i -> i.getName().equals(tuple[1]))
-                                        .findFirst().ifPresent(i -> server.addIngredientToDish(newdish, i, Double.parseDouble(tuple[0])));
+                                for (String ingredient : recipe) {
+                                    String[] tuple = ingredient.split(" \\* ");
+                                    server.getIngredients()
+                                            .stream()
+                                            .filter(i -> i.getName().equals(tuple[1]))
+                                            .findFirst().ifPresent(i -> server.addIngredientToDish(newdish, i, Double.parseDouble(tuple[0])));
+                                }
                             }
                         } else if (s.startsWith("USER")) {
                             String[] user = s.split(":");
-                            server.getPostcodes()
-                                    .stream()
-                                    .filter(postcode -> postcode.getName().equals(user[4]))
-                                    .findFirst().ifPresent(postcode -> server.users.add(new User(user[1], user[2], user[3], postcode)));
+                            if (server.getUsers().stream().noneMatch(u -> u.getName().equals(user[1]))) {
+                                server.getPostcodes()
+                                        .stream()
+                                        .filter(postcode -> postcode.getName().equals(user[4]))
+                                        .findFirst().ifPresent(postcode -> server.users.add(new User(user[1], user[2], user[3], postcode)));
+                            }
                         } else if (s.startsWith("ORDER")) {
                             String[] order = s.split(":");
                             HashMap<Dish, Number> neworder = new HashMap<>();

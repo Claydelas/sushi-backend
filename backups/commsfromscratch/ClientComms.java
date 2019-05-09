@@ -1,5 +1,6 @@
-package comp1206.sushi.comms;
+package comp1206.sushi.client;
 
+import comp1206.sushi.comms.Message;
 
 import java.io.*;
 import java.net.Socket;
@@ -13,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * depending on the response.
  * @author Jack Corbett
  */
-public class ClientSocket {
+class ClientComms {
     private Socket clientSocket = null;
     private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
@@ -23,7 +24,7 @@ public class ClientSocket {
     /**
      * Constructor which starts a new thread to establish a connection to the server
      */
-    public ClientSocket() {
+    ClientComms() {
         Thread ClientThread = new Thread(() -> {
             try {
                 clientSocket = new Socket("127.0.0.1", 2222);
@@ -41,7 +42,7 @@ public class ClientSocket {
 
                     while(true) {
                         outputStream.writeObject(messageQueue.take());
-                        responseQueue.add((Message) inputStream.readObject());
+                        responseQueue.offer((Message) inputStream.readObject());
                     }
                 } catch (UnknownHostException e) {
                     System.err.println("Trying to connect to unknown host: " + e.getMessage());
@@ -61,13 +62,8 @@ public class ClientSocket {
      * Sends a message to the server by adding it to the message queue.
      * @param message String to be sent
      */
-    public void sendMessage(Message message) {
+    void sendMessage(Message message) {
         messageQueue.add(message);
-        try {
-            responseQueue.add((Message) inputStream.readObject());
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -75,7 +71,7 @@ public class ClientSocket {
      * ensures the correct response is received without the thread being blocked if there is an issue with the server.
      * @return The server's response.
      */
-    public Message receiveMessage() {
+    Message receiveMessage() {
         try {
             return responseQueue.poll(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

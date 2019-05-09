@@ -31,7 +31,7 @@ public class CommunicationLayer implements Runnable {
     public CommunicationLayer(Server server) {
         try {
             //Start listening on the port
-            serverSocket = new ServerSocket(2222);
+            serverSocket = new ServerSocket(1432);
             this.server = server;
             clientList = new ArrayList<>();
         } catch (IOException ioe) {
@@ -250,7 +250,7 @@ public class CommunicationLayer implements Runnable {
 
         private synchronized void getOrders(Message sent) throws IOException {
             User user = (User) sent.getObject();
-            ous.writeObject(new Message("Orders:", server.getUserOrders(user)));
+            ous.writeObject(new Message("Orders:", server.getUserOrders(user.getName())));
         }
 
         private synchronized void updateDishBasket(Message sent) throws IOException {

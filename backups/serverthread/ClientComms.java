@@ -1,5 +1,7 @@
 package comp1206.sushi.client;
 
+import comp1206.sushi.comms.Message;
+
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -14,10 +16,10 @@ import java.util.concurrent.TimeUnit;
  */
 class ClientComms {
     private Socket clientSocket = null;
-    private PrintWriter outputStream;
+    private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
-    private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
-    private BlockingQueue<Object> responseQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Message> responseQueue = new LinkedBlockingQueue<>();
 
     /**
      * Constructor which starts a new thread to establish a connection to the server
@@ -26,7 +28,7 @@ class ClientComms {
         Thread ClientThread = new Thread(() -> {
             try {
                 clientSocket = new Socket("127.0.0.1", 2222);
-                outputStream = new PrintWriter(clientSocket.getOutputStream(), true);
+                outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
                 inputStream = new ObjectInputStream(clientSocket.getInputStream());
             } catch (UnknownHostException e) {
                 System.err.println("Cannot find server");
@@ -39,8 +41,8 @@ class ClientComms {
                     System.out.println("SUSHI CLIENT STARTED");
 
                     while(true) {
-                        outputStream.println(messageQueue.take());
-                        responseQueue.add(inputStream.readObject());
+                        outputStream.writeObject(messageQueue.take());
+                        responseQueue.offer((Message) inputStream.readObject());
                     }
                 } catch (UnknownHostException e) {
                     System.err.println("Trying to connect to unknown host: " + e.getMessage());
@@ -60,7 +62,7 @@ class ClientComms {
      * Sends a message to the server by adding it to the message queue.
      * @param message String to be sent
      */
-    void sendMessage(String message) {
+    void sendMessage(Message message) {
         messageQueue.add(message);
     }
 
@@ -69,7 +71,7 @@ class ClientComms {
      * ensures the correct response is received without the thread being blocked if there is an issue with the server.
      * @return The server's response.
      */
-    Object receiveMessage() {
+    Message receiveMessage() {
         try {
             return responseQueue.poll(1, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
