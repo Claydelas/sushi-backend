@@ -16,6 +16,7 @@ public class DishStock {
     private ConcurrentHashMap<Dish, Number> stock;
     private boolean restockingEnabled;
     private boolean running;
+    private Server server;
 
     /**
      * Constructor which starts a thread to monitor the stock level, adding a dish to the queue if it needs to be
@@ -26,6 +27,7 @@ public class DishStock {
         stock = new ConcurrentHashMap<>();
         restockingEnabled = true;
         running = true;
+        this.server = server;
 
         Thread dishStockMonitor = new Thread(() -> {
             /* Loop while the dish stock is running (this is always set to true as we want it to monitor all the time
@@ -114,6 +116,7 @@ public class DishStock {
     void addStock(Dish dish) {
         stock.put(dish, stock.getOrDefault(dish, 0).intValue() + 1);
         if (dish.noRestocking > 0) dish.noRestocking --;
+        server.notifyUpdate();
     }
 
     /**
@@ -122,5 +125,6 @@ public class DishStock {
      */
     public void removeDish(Dish dish) {
         stock.put(dish, stock.get(dish).intValue() - 1);
+        server.notifyUpdate();
     }
 }

@@ -20,7 +20,10 @@ public class Configuration {
                     .forEach(s -> {
                         //System.out.println(s);
                         if (s.startsWith("POSTCODE")) {
-                            server.addPostcode(s.split(":")[1]);
+                            String[] postcode = s.split(":");
+
+                            if (server.getPostcodes().stream().noneMatch(p -> p.getName().equals(postcode[1])))
+                                server.addPostcode(postcode[1]);
                         } else if (s.startsWith("RESTAURANT")) {
                             String[] restaurant = s.split(":");
 

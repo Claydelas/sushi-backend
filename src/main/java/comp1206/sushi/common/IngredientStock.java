@@ -16,6 +16,7 @@ public class IngredientStock {
     private ConcurrentHashMap<Ingredient, Number> stock;
     private boolean restockingEnabled;
     private boolean running;
+    private Server server;
 
     /**
      * Constructor which starts a thread to monitor the stock level, adding an ingredient to the queue if it needs to
@@ -27,6 +28,7 @@ public class IngredientStock {
         stock = new ConcurrentHashMap<>();
         restockingEnabled = true;
         running = true;
+        this.server = server;
 
         Thread ingredientStockMonitor = new Thread(() -> {
             /* Loop while the ingredient stock is running (this is always set to true as we want it to monitor all the
@@ -115,6 +117,7 @@ public class IngredientStock {
     void addStock(Ingredient ingredient, Number amount) {
         stock.put(ingredient, stock.getOrDefault(ingredient, 0).intValue() + amount.intValue());
         if (ingredient.noRestocking > 0) ingredient.noRestocking--;
+        server.notifyUpdate();
     }
 
     /**
@@ -138,5 +141,6 @@ public class IngredientStock {
                 System.err.println("Ingredient not found in stock system");
             }
         }
+        server.notifyUpdate();
     }
 }
