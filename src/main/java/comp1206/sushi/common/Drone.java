@@ -1,6 +1,5 @@
 package comp1206.sushi.common;
 
-import comp1206.sushi.common.Drone;
 import comp1206.sushi.server.Server;
 
 import java.util.Map;
@@ -122,9 +121,15 @@ public class Drone extends Model implements Runnable {
 					status = "Delivering: " + order.getName();
 					notifyUpdate();
 					try {
+						//progress loop
+						for (int i = 0; i < 100; i++) {
+							Thread.sleep((long)(order.getDistance().doubleValue() * 1000 / speed.doubleValue() * 10));
+							progress = i;
+							//if (i % 5==0) notifyUpdate();
+						}
+						progress = null;
 						// Add 5 seconds to factor for loading and offloading dishes
-						Thread.sleep((long)(order.getDistance().doubleValue() / speed.doubleValue() * 20000) + 5000);
-
+						Thread.sleep(5000);
 						for (Map.Entry<Dish, Number> entry : order.getItems().entrySet()) {
 							Dish dish = entry.getKey();
 							Number amount = entry.getValue();
@@ -136,11 +141,14 @@ public class Drone extends Model implements Runnable {
 						source = destination;
 						destination = server.getRestaurantPostcode();
 						notifyUpdate();
-						Thread.sleep((long)(order.getDistance().doubleValue() / speed.doubleValue() * 20000) + 5000);
-
+						for (int i = 0; i < 100; i++) {
+							Thread.sleep((long) (order.getDistance().doubleValue() * 1000 / speed.doubleValue() * 10));
+							progress = i;
+						}
 					} catch (InterruptedException e) {
 						System.err.println("Drone failed to deliver order: " + order.getName());
 					}
+					progress = null;
 					source = null;
 					destination = null;
 					status = "Idle";
@@ -159,15 +167,23 @@ public class Drone extends Model implements Runnable {
 				status = "Restocking: " + ingredient.getName();
 				notifyUpdate();
 				try {
-					Thread.sleep((long)(ingredient.getSupplier().getDistance().doubleValue() / speed.doubleValue() * 20000));
+					for (int i = 0; i < 100; i++) {
+						Thread.sleep((long) (ingredient.getSupplier().getDistance().doubleValue() * 1000 / speed.doubleValue() * 10));
+						progress = i;
+					}
+					progress = null;
 					source = destination;
 					destination = server.getRestaurantPostcode();
 					notifyUpdate();
-					Thread.sleep((long)(ingredient.getSupplier().getDistance().doubleValue() / speed.doubleValue() * 20000));
+					for (int i = 0; i < 100; i++) {
+						Thread.sleep((long) (ingredient.getSupplier().getDistance().doubleValue() * 1000 / speed.doubleValue() * 10));
+						progress = i;
+					}
 					ingredientStock.addStock(ingredient, ingredient.getRestockAmount());
 				} catch (InterruptedException e) {
 					System.err.println("Drone failed to restock ingredient: " + ingredient.getName());
 				}
+				progress = null;
 				source = null;
 				destination = null;
 				status = "Idle";
