@@ -31,8 +31,6 @@ public class AppTest
     public AppTest( String testName )
     {
         super( testName );
-        //loadConfig();
-        //testClient();
     }
 
     /**
@@ -76,12 +74,9 @@ public class AppTest
 //        assertEquals(client.getRestaurantName(),server.getRestaurantName());
 //        assertEquals(client.getRestaurantPostcode().getName(),server.getRestaurantPostcode().getName());
 //        client.getOrders(new User("Admin","password","hi",new Postcode("SO16 3ZE"))).forEach(order -> System.out.println(order.getItems()));
-        server.getOrders().forEach(Order::setComplete);
-        server.getOrders().forEach(order -> {
-            if(client.isOrderComplete(order))
-                System.out.println("true");
-            else System.out.println("false");
-        });
+//        server.getOrders().forEach(Order::setComplete);
+//        server.getOrders().forEach(order -> System.out.println(client.isOrderComplete(order)));
+//        server.getOrders().forEach(order -> System.out.println(client.getOrderStatus(order)));
 //        server.getUsers().forEach(user -> System.out.println(client.getOrders(user)));
 //        System.out.println(client.getPostcodes());
 //        System.out.println(client.getDishes());
@@ -95,10 +90,5 @@ public class AppTest
         ClientComms clientComms = new ClientComms("127.0.0.1",8888);
         clientComms.sendMessage(new Message(Message.USERS,"GET"));
         System.out.println(clientComms.receiveMessage());
-    }
-
-    public void testConnect(){
-        //ClientComms clientComms = new ClientComms("127.0.0.1",8888);
-        //clientComms.sendMessage(new Message(Message.GET_RESTAURANT,"bye"));
     }
 }

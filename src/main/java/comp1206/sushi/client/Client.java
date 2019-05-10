@@ -183,6 +183,7 @@ public class Client implements ClientInterface {
         return this.orders;
     }
 
+    //complete
     @Override
     public boolean isOrderComplete(Order order) {
         if (client.isConnected()) {
