@@ -21,7 +21,6 @@ public class DishStock {
     /**
      * Constructor which starts a thread to monitor the stock level, adding a dish to the queue if it needs to be
      * restocked.
-     * @param server Reference to the server.
      */
     public DishStock(Server server) {
         stock = new ConcurrentHashMap<>();

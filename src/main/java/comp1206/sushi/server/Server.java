@@ -21,38 +21,32 @@ public class Server implements ServerInterface {
 
     // Responsible for backing up the server state to file when a change is made
     public DataPersistence dataPersistence = new DataPersistence(this);
-
-    // Instantiate the stock controllers
-    private IngredientStock ingredients = new IngredientStock(this);
-    private DishStock dishes = new DishStock(this);
-
-    //private data models
-    private ArrayList<Supplier> suppliers = new ArrayList<>();
-    private ArrayList<Postcode> postcodes = new ArrayList<>();
-    private ArrayList<Staff> staff = new ArrayList<>();
-    private ArrayList<Drone> drones = new ArrayList<>();
-
     //public data models
     public ArrayList<User> users = new ArrayList<>();
     public ArrayList<Order> orders = new ArrayList<>();
     public Restaurant restaurant;
-
     public ConcurrentLinkedQueue<Order> orderQueue = new ConcurrentLinkedQueue<>();
     // A queue used by the drones to check for ingredients that need to be restocked
     public ConcurrentLinkedQueue<Ingredient> restockIngredientQueue = new ConcurrentLinkedQueue<>();
     // A queue used by the staff to check for dishes that need to be restocked
     public ConcurrentLinkedQueue<Dish> restockDishQueue = new ConcurrentLinkedQueue<>();
-
+    // Instantiate the stock controllers
+    private IngredientStock ingredients = new IngredientStock(this);
+    private DishStock dishes = new DishStock(this);
+    //private data models
+    private ArrayList<Supplier> suppliers = new ArrayList<>();
+    private ArrayList<Postcode> postcodes = new ArrayList<>();
+    private ArrayList<Staff> staff = new ArrayList<>();
+    private ArrayList<Drone> drones = new ArrayList<>();
+    public ArrayList[] lists = {drones, orders, staff, suppliers, users, postcodes};
     // Stores a reference to all update listeners added so the UI can be updated when changes take place
     private ArrayList<UpdateListener> listeners = new ArrayList<>();
-
-    public ArrayList[] lists = {drones, orders, staff, suppliers, users, postcodes};
 
     public Server() {
         logger.info("Starting up server...");
         restaurant = new Restaurant("Southampton Sushi", new Postcode("SO17 1BJ"));
         if (Files.exists(Paths.get("backup.txt"))) loadConfiguration("backup.txt");
-        new ServerComms(this,8888);
+        new ServerComms(this, 8888);
     }
 
     @Override
@@ -63,7 +57,7 @@ public class Server implements ServerInterface {
     @Override
     public Dish addDish(String name, String description, Number price, Number restockThreshold, Number restockAmount) {
         Dish newDish = new Dish(name, description, price, restockThreshold, restockAmount);
-        dishes.addDishToStock(newDish,0);
+        dishes.addDishToStock(newDish, 0);
         this.notifyUpdate();
         return newDish;
     }
@@ -91,7 +85,7 @@ public class Server implements ServerInterface {
 
     @Override
     public void setStock(Dish dish, Number stock) {
-        dishes.setStockLevel(dish,stock);
+        dishes.setStockLevel(dish, stock);
         this.notifyUpdate();
     }
 
@@ -111,7 +105,7 @@ public class Server implements ServerInterface {
                                     Number restockThreshold, Number restockAmount, Number weight) {
 
         Ingredient mockIngredient = new Ingredient(name, unit, supplier, restockThreshold, restockAmount, weight);
-        ingredients.addIngredientToStock(mockIngredient,0);
+        ingredients.addIngredientToStock(mockIngredient, 0);
 
         this.notifyUpdate();
         return mockIngredient;
@@ -194,7 +188,7 @@ public class Server implements ServerInterface {
         return this.orders;
     }
 
-    public List<Order> getUserOrders(String username){
+    public List<Order> getUserOrders(String username) {
         return this.orders.stream().filter(order -> order.getUser().getName().equals(username)).collect(Collectors.toList());
     }
 
@@ -300,7 +294,7 @@ public class Server implements ServerInterface {
         restockDishQueue.clear();
         restockIngredientQueue.clear();
         new Configuration(filename, this);
-        logger.log(Level.INFO,"Loaded configuration: " + filename);
+        logger.log(Level.INFO, "Loaded configuration: " + filename);
     }
 
     @Override

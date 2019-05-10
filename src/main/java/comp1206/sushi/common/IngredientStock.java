@@ -3,7 +3,6 @@ package comp1206.sushi.common;
 import comp1206.sushi.server.Server;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,8 +20,6 @@ public class IngredientStock {
     /**
      * Constructor which starts a thread to monitor the stock level, adding an ingredient to the queue if it needs to
      * be restocked.
-     *
-     * @param server Reference to the server.
      */
     public IngredientStock(Server server) {
         stock = new ConcurrentHashMap<>();

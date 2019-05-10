@@ -2,7 +2,6 @@ package comp1206.sushi.comms;
 
 import comp1206.sushi.common.Dish;
 import comp1206.sushi.common.Order;
-import comp1206.sushi.common.Postcode;
 import comp1206.sushi.common.User;
 import comp1206.sushi.server.Server;
 
@@ -244,6 +243,21 @@ public class ServerComms {
                                 .stream()
                                 .filter(order -> order.getName().equals(cm.getMessage()))
                                 .findFirst().ifPresent(order -> writeMsg(new Message(order.getComplete())));
+                        break;
+                    case Message.ORDER_COST:
+                        server.getOrders()
+                                .stream()
+                                .filter(order -> order.getName().equals(cm.getMessage()))
+                                .findFirst().ifPresent(order -> writeMsg(new Message(order.getCost())));
+                        break;
+                    case Message.CANCEL_ORDER:
+                        server.getOrders()
+                                .stream()
+                                .filter(order -> order.getName().equals(cm.getMessage()))
+                                .findFirst().ifPresent(order -> {
+                            order.setCancelled();
+                            server.orderQueue.remove(order);
+                        });
                         break;
                     case Message.REGISTER:
                         String[] userData = cm.getMessage().split(":");

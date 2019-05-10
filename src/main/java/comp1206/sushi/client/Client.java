@@ -3,7 +3,6 @@ package comp1206.sushi.client;
 import comp1206.sushi.common.*;
 import comp1206.sushi.comms.ClientComms;
 import comp1206.sushi.comms.Message;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -166,9 +165,7 @@ public class Client implements ClientInterface {
     //complete
     @Override
     public void clearBasket(User user) {
-        if (client.isConnected()) {
-            client.sendMessage(new Message(Message.CLEAR_BASKET, user.getName()));
-        }
+        if (client.isConnected()) client.sendMessage(new Message(Message.CLEAR_BASKET, user.getName()));
         user.clearBasket();
     }
 
@@ -213,21 +210,35 @@ public class Client implements ClientInterface {
         return order.getStatus();
     }
 
+    //complete
     @Override
     public Number getOrderCost(Order order) {
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.ORDER_COST, order.getName()));
+            Object cost = client.receiveMessage();
+            if (cost instanceof Number) {
+                return (Number) cost;
+            }
+        }
         return order.getCost();
     }
 
+    //complete
     @Override
     public void cancelOrder(Order order) {
+        if (client.isConnected()) client.sendMessage(new Message(Message.CANCEL_ORDER, order.getName()));
         order.setCancelled();
     }
 
+    //complete
     @Override
     public void addUpdateListener(UpdateListener listener) {
         listeners.add(listener);
+        for (Dish dish : dishes) dish.addUpdateListener(listener);
+        for (Order order : orders) order.addUpdateListener(listener);
     }
 
+    //complete
     @Override
     public void notifyUpdate() {
         for (UpdateListener updateListener : listeners) {

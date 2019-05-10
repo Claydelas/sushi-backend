@@ -94,6 +94,7 @@ public class ClientComms {
             e.printStackTrace();
         }
     }
+
     public Object receiveMessage() {
         try {
             return responseQueue.poll(1, TimeUnit.SECONDS);
