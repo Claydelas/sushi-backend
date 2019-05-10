@@ -193,10 +193,10 @@ public class Server implements ServerInterface {
         return this.orders;
     }
 
-    public List<Order> getUserOrders(User user){
+    public List<Order> getUserOrders(String username){
         List<Order> orders = new ArrayList<>();
         this.orders.forEach(order -> {
-            if (order.getUser().getName().equals(user.getName()))
+            if (order.getUser().getName().equals(username))
                 orders.add(order);
         });
         return orders;

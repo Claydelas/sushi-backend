@@ -72,7 +72,10 @@ public class AppTest
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO16 3ZE")));
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO17 1BJ")));
 //        server.loadConfiguration("Configuration.txt");
-//        System.out.println(client.getRestaurant());
+        assertEquals(client.getRestaurantName(),server.getRestaurantName());
+        assertEquals(client.getRestaurantPostcode().getName(),server.getRestaurantPostcode().getName());
+
+
 //        server.getUsers().forEach(user -> System.out.println(client.getOrders(user)));
 //        System.out.println(client.getPostcodes());
 //        System.out.println(client.getDishes());

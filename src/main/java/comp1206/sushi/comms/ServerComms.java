@@ -1,5 +1,7 @@
 package comp1206.sushi.comms;
 
+import comp1206.sushi.common.Postcode;
+import comp1206.sushi.common.User;
 import comp1206.sushi.server.Server;
 
 import java.io.IOException;
@@ -97,7 +99,7 @@ public class ServerComms {
     }
 
     // if client sent LOGOUT message to exit
-    synchronized void remove(int id) {
+    private synchronized void remove(int id) {
         al.remove(id);
     }
 
@@ -110,10 +112,10 @@ public class ServerComms {
         ObjectOutputStream sOutput;
         // my unique id (easier for disconnection)
         int id;
-        // the Username of the Client
-        String username;
         // message object to receive message and its type
         Message cm;
+        //global user
+        User user;
         // timestamp
         String date;
 
@@ -153,20 +155,80 @@ public class ServerComms {
                 // different actions based on type message
                 switch (cm.getType()) {
                     case Message.MESSAGE:
-                        boolean confirmation = broadcast(cm.getMessage());
-                        if (!confirmation) writeMsg(new Message("Sorry. No such user exists."));
+//                        boolean confirmation = broadcast(cm.getMessage());
+//                        if (!confirmation) writeMsg(new Message("Sorry. No such user exists."));
                         break;
                     case Message.LOGOUT:
-                        System.out.println(username + " disconnected with a LOGOUT message.");
+                        System.out.println(id + " disconnected with a LOGOUT message.");
                         keepGoing = false;
                         break;
                     case Message.USERS:
                         writeMsg(new Message(server.getUsers()));
                         break;
+                    case Message.POSTCODES:
+                        writeMsg(new Message(server.getPostcodes()));
+                        break;
+                    case Message.DISHES:
+                        writeMsg(new Message(server.getDishes()));
+                        break;
+                    case Message.RESTAURANT:
+                        writeMsg(new Message(server.getRestaurant()));
+                        break;
+                    case Message.UPDATE_BASKET:
+                        String[] basketDishData = cm.getMessage().split(":");
+                        if (user != null) {
+                            server.getDishes()
+                                    .stream()
+                                    .filter(dish -> dish.getName().equals(basketDishData[1]))
+                                    .findFirst().ifPresent(dish -> user.addToBasket(dish, Integer.parseInt(basketDishData[2])));
+                        } else {
+                            server.getUsers()
+                                    .stream()
+                                    .filter(userInfo -> userInfo.getName().equals(basketDishData[0]))
+                                    .findFirst().ifPresent(u -> server.getDishes()
+                                    .stream()
+                                    .filter(dish -> dish.getName().equals(basketDishData[1]))
+                                    .findFirst().ifPresent(dish -> u.addToBasket(dish, Integer.parseInt(basketDishData[2]))));
+                        }
+                        break;
+                    case Message.ORDERS:
+                        writeMsg(new Message(server.getUserOrders(cm.getMessage())));
+                        break;
+                    case Message.BACKUP:
+                        server.notifyUpdate();
+                        break;
+                    case Message.REGISTER:
+                        String[] userData = cm.getMessage().split(":");
+                        if (server.getUsers().stream().noneMatch(user -> userData[0].equals(user.getName()))) {
+                            server.getPostcodes()
+                                    .stream()
+                                    .filter(postcode -> postcode.getName().equals(userData[3]))
+                                    .findFirst().ifPresent(postcode -> {
+                                User newUser = new User(userData[0], userData[1], userData[2], postcode);
+                                server.users.add(newUser);
+                                writeMsg(new Message(newUser));
+                                this.user = newUser;
+                                server.notifyUpdate();
+                            });
+                        } else writeMsg(new Message(null));
+                        break;
+                    case Message.LOGIN:
+                        String[] loginInfo = cm.getMessage().split(":");
+                        server.getUsers()
+                                .stream()
+                                .filter(user -> user.getName().equals(loginInfo[0]))
+                                .findFirst().ifPresent(user -> {
+                            if (user.getPassword().equals(loginInfo[1])) {
+                                writeMsg(new Message(user));
+                                this.user = user;
+                            } else
+                                writeMsg(new Message(null));
+                        });
+                        break;
                 }
             }
             // if out of the loop then disconnected and remove from client list
-            remove(id);
+            remove(id - 1);
             close();
         }
 

@@ -14,6 +14,7 @@ public class ClientComms {
     private ObjectInputStream sInput;        // to read from the socket
     private ObjectOutputStream sOutput;        // to write on the socket
     private Socket socket;                    // socket object
+    private boolean connected;
 
     private String serverIP;    // server and username
     private int port;                    //port
@@ -45,6 +46,7 @@ public class ClientComms {
         // exception handler if it failed
         catch (Exception ec) {
             System.out.println("Error connecting to server:" + ec);
+            connected = false;
             return false;
         }
         System.out.println("Connection accepted " + socket.getInetAddress() + ":" + socket.getPort());
@@ -55,12 +57,14 @@ public class ClientComms {
             sOutput = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException eIO) {
             System.out.println("Exception creating new Input/output Streams: " + eIO);
+            connected = false;
             return false;
         }
 
         // creates the Thread to listen from the server
         new ListenFromServer().start();
 
+        connected = true;
         return true;
     }
 
@@ -98,6 +102,10 @@ public class ClientComms {
         }
         System.err.println("Timeout - No response from server");
         return null;
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 
     /*

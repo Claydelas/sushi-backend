@@ -7,7 +7,7 @@ Please update this file to reflect your progress by adding a * inside the bracke
 [*] 4: Stock Management
 [*] 5: Kitchen Staff
 [ ] 6: Communication
-[*] 7: Drones
+[*-] 7: Drones //TODO progress meter/source/destination
 [*] 8: Persistence
 [ ] Extension: Drone battery
 [ ] Extension: Staff fatigue
