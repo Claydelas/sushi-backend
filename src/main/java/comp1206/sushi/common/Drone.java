@@ -12,7 +12,7 @@ public class Drone extends Model implements Runnable {
 	private volatile boolean running;
 	private IngredientStock ingredientStock;
 	private DishStock dishStock;
-	Server server;
+	private Server server;
 	
 	private Number capacity;
 	private Number battery;
@@ -117,6 +117,8 @@ public class Drone extends Model implements Runnable {
 					}
 				}
 				if (deliver) {
+					source = server.getRestaurantPostcode();
+					destination = order.getUser().getPostcode();
 					status = "Delivering: " + order.getName();
 					notifyUpdate();
 					try {
@@ -131,11 +133,16 @@ public class Drone extends Model implements Runnable {
 							}
 						}
 						order.setComplete();
-//						// Trigger a backup to be saved
-//						server.dataPersistence.backup(server);
+						source = destination;
+						destination = server.getRestaurantPostcode();
+						notifyUpdate();
+						Thread.sleep((long)(order.getDistance().doubleValue() / speed.doubleValue() * 20000) + 5000);
+
 					} catch (InterruptedException e) {
 						System.err.println("Drone failed to deliver order: " + order.getName());
 					}
+					source = null;
+					destination = null;
 					status = "Idle";
 					notifyUpdate();
 				} else {
@@ -147,14 +154,22 @@ public class Drone extends Model implements Runnable {
 			Ingredient ingredient = server.restockIngredientQueue.poll();
 
 			if (ingredient != null) {
+				source = server.getRestaurantPostcode();
+				destination = ingredient.getSupplier().getPostcode();
 				status = "Restocking: " + ingredient.getName();
 				notifyUpdate();
 				try {
+					Thread.sleep((long)(ingredient.getSupplier().getDistance().doubleValue() / speed.doubleValue() * 20000));
+					source = destination;
+					destination = server.getRestaurantPostcode();
+					notifyUpdate();
 					Thread.sleep((long)(ingredient.getSupplier().getDistance().doubleValue() / speed.doubleValue() * 20000));
 					ingredientStock.addStock(ingredient, ingredient.getRestockAmount());
 				} catch (InterruptedException e) {
 					System.err.println("Drone failed to restock ingredient: " + ingredient.getName());
 				}
+				source = null;
+				destination = null;
 				status = "Idle";
 				notifyUpdate();
 			}
