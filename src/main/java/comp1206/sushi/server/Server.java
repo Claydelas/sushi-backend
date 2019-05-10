@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 public class Server implements ServerInterface {
 
@@ -194,12 +195,7 @@ public class Server implements ServerInterface {
     }
 
     public List<Order> getUserOrders(String username){
-        List<Order> orders = new ArrayList<>();
-        this.orders.forEach(order -> {
-            if (order.getUser().getName().equals(username))
-                orders.add(order);
-        });
-        return orders;
+        return this.orders.stream().filter(order -> order.getUser().getName().equals(username)).collect(Collectors.toList());
     }
 
     @Override
@@ -294,6 +290,8 @@ public class Server implements ServerInterface {
 
     @Override
     public void loadConfiguration(String filename) {
+        drones.forEach(Drone::stopRunning);
+        staff.forEach(Staff::stopWorking);
         orders.forEach(Order::setCancelled);
         for (ArrayList list : lists) {
             list.clear();

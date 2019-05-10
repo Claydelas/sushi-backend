@@ -7,10 +7,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Client implements ClientInterface {
 
@@ -70,7 +67,7 @@ public class Client implements ClientInterface {
     public User login(String username, String password) {
         if (username.isBlank() || password.isBlank()) return null;
         if (client.isConnected()) {
-            client.sendMessage(new Message(Message.LOGIN,username + ":" + password));
+            client.sendMessage(new Message(Message.LOGIN, username + ":" + password));
             Object user = client.receiveMessage();
             if (user instanceof User) this.user = (User) user;
         }
@@ -146,30 +143,72 @@ public class Client implements ClientInterface {
         user.addToBasket(dish, quantity);
     }
 
+    //complete
     @Override
     public Order checkoutBasket(User user) {
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.CHECKOUT, user.getName()));
+            Object order = client.receiveMessage();
+            if (order instanceof Order) {
+                user.clearBasket();
+                return (Order) order;
+            }
+        }
+        if (user != null) {
+            LinkedHashMap<Dish, Number> items = new LinkedHashMap<>(user.getBasket());
+            Order order = new Order(user, items);
+            user.clearBasket();
+            return order;
+        }
         return null;
     }
 
+    //complete
     @Override
     public void clearBasket(User user) {
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.CLEAR_BASKET, user.getName()));
+        }
         user.clearBasket();
     }
 
-    // FIXME: 08/05/2019
+    //complete
     @Override
     public List<Order> getOrders(User user) {
-
-        return orders;
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.ORDERS, user.getName()));
+            Object orders = client.receiveMessage();
+            if (orders instanceof List) this.orders = (ArrayList<Order>) orders;
+        }
+        return this.orders;
     }
 
     @Override
     public boolean isOrderComplete(Order order) {
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.ORDER_COMPLETE, order.getName()));
+            Object isComplete = client.receiveMessage();
+            if (isComplete instanceof Boolean) {
+                if ((boolean) isComplete) {
+                    order.setComplete();
+                    return true;
+                } else return false;
+            }
+        }
         return order.getComplete();
     }
 
+    //complete
     @Override
     public String getOrderStatus(Order order) {
+        if (client.isConnected()) {
+            client.sendMessage(new Message(Message.ORDER_STATUS, order.getName()));
+            Object status = client.receiveMessage();
+            if (status instanceof String) {
+                order.setStatus(status.toString());
+                return status.toString();
+            }
+        }
         return order.getStatus();
     }
 

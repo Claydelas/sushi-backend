@@ -9,7 +9,7 @@ public class Drone extends Model implements Runnable {
 
 	private Number speed;
 	private Number progress;
-	private boolean running;
+	private volatile boolean running;
 	private IngredientStock ingredientStock;
 	private DishStock dishStock;
 	Server server;
@@ -90,6 +90,10 @@ public class Drone extends Model implements Runnable {
 		return status;
 	}
 
+	public void stopRunning(){
+		running = false;
+	}
+
 	public void setStatus(String status) {
 		notifyUpdate("status",this.status,status);
 		this.status = status;
@@ -107,7 +111,7 @@ public class Drone extends Model implements Runnable {
 				for (Map.Entry<Dish, Number> entry : order.getItems().entrySet()) {
 					Dish dish = entry.getKey();
 					Number amount = entry.getValue();
-					if(dishStock.getStock().keySet().contains(dish))
+					//if(dishStock.getStock().keySet().contains(dish))
 					if (dishStock.getStock().get(dish).intValue() < amount.intValue()) {
 						deliver = false;
 					}

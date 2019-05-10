@@ -1,5 +1,7 @@
 package comp1206.sushi.comms;
 
+import comp1206.sushi.common.Dish;
+import comp1206.sushi.common.Order;
 import comp1206.sushi.common.Postcode;
 import comp1206.sushi.common.User;
 import comp1206.sushi.server.Server;
@@ -12,6 +14,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 
 public class ServerComms {
     // a unique ID for each connection
@@ -191,11 +194,56 @@ public class ServerComms {
                                     .findFirst().ifPresent(dish -> u.addToBasket(dish, Integer.parseInt(basketDishData[2]))));
                         }
                         break;
+                    case Message.CHECKOUT:
+                        if (user != null) {
+                            LinkedHashMap<Dish, Number> items = new LinkedHashMap<>(user.getBasket());
+                            Order order = new Order(user, items);
+                            server.orders.add(order);
+                            server.orderQueue.add(order);
+                            user.clearBasket();
+                            writeMsg(new Message(order));
+                        } else {
+                            server.getUsers()
+                                    .stream()
+                                    .filter(user -> user.getName().equals(cm.getMessage()))
+                                    .findFirst().ifPresent(user -> {
+                                LinkedHashMap<Dish, Number> items = new LinkedHashMap<>(user.getBasket());
+                                Order order = new Order(user, items);
+                                server.orders.add(order);
+                                server.orderQueue.add(order);
+                                user.clearBasket();
+                                writeMsg(new Message(order));
+                            });
+                        }
+                        server.notifyUpdate();
+                        break;
+                    case Message.CLEAR_BASKET:
+                        if (user != null) {
+                            user.clearBasket();
+                        } else {
+                            server.getUsers()
+                                    .stream()
+                                    .filter(user -> user.getName().equals(cm.getMessage()))
+                                    .findFirst().ifPresent(User::clearBasket);
+                        }
+                        break;
                     case Message.ORDERS:
                         writeMsg(new Message(server.getUserOrders(cm.getMessage())));
                         break;
                     case Message.BACKUP:
                         server.notifyUpdate();
+                        break;
+                    case Message.ORDER_STATUS:
+                        server.getOrders()
+                                .stream()
+                                .filter(order -> order.getName().equals(cm.getMessage()))
+                                .findFirst().ifPresent(order -> writeMsg(new Message(order.getStatus())));
+                        break;
+                    case Message.ORDER_COMPLETE:
+                        server.getOrders()
+                                .stream()
+                                .filter(order -> order.getName().equals(cm.getMessage()))
+                                .findFirst().ifPresent(order -> writeMsg(new Message(order.getComplete())));
                         break;
                     case Message.REGISTER:
                         String[] userData = cm.getMessage().split(":");

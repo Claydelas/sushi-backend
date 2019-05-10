@@ -6,7 +6,7 @@ public class Staff extends Model implements Runnable {
 
 	private String name;
 	private String status;
-	private Boolean working;
+	private volatile boolean working;
 	private IngredientStock ingredientStock;
 	private DishStock dishStock;
 	private Number fatigue;
@@ -33,7 +33,7 @@ public class Staff extends Model implements Runnable {
 				// Check there are enough ingredients
 				for (Ingredient ingredient : dish.getRecipe().keySet()) {
 					if (ingredient != null) {
-						if(ingredientStock.getStock().keySet().contains(ingredient))
+						//if(ingredientStock.getStock().keySet().contains(ingredient))
 						if (ingredientStock.getStock().get(ingredient).intValue() <
 								dish.getRecipe().get(ingredient).intValue()) {
 							makeDish = false;
@@ -66,7 +66,7 @@ public class Staff extends Model implements Runnable {
 			// Remove the ingredients used from the stock system
 			ingredientStock.removeStock(dish.getRecipe());
 
-			Thread.sleep((long) (Math.random() * 60000 + 20000));
+			Thread.sleep((long) (Math.random() * ((60000 - 20000) + 1)) + 20000);
 
 			// Add the newly prepared dish to the stock system
 			dishStock.addStock(dish);
@@ -101,6 +101,9 @@ public class Staff extends Model implements Runnable {
 	public void setStatus(String status) {
 		notifyUpdate("status",this.status,status);
 		this.status = status;
+	}
+	public void stopWorking(){
+		working = false;
 	}
 
 }

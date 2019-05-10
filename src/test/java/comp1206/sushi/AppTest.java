@@ -1,6 +1,7 @@
 package comp1206.sushi;
 
 import comp1206.sushi.client.Client;
+import comp1206.sushi.common.Order;
 import comp1206.sushi.common.Postcode;
 import comp1206.sushi.common.Restaurant;
 import comp1206.sushi.common.User;
@@ -72,10 +73,15 @@ public class AppTest
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO16 3ZE")));
 //        System.out.println(client.register("hi", "hi", "hi", new Postcode("SO17 1BJ")));
 //        server.loadConfiguration("Configuration.txt");
-        assertEquals(client.getRestaurantName(),server.getRestaurantName());
-        assertEquals(client.getRestaurantPostcode().getName(),server.getRestaurantPostcode().getName());
-
-
+//        assertEquals(client.getRestaurantName(),server.getRestaurantName());
+//        assertEquals(client.getRestaurantPostcode().getName(),server.getRestaurantPostcode().getName());
+//        client.getOrders(new User("Admin","password","hi",new Postcode("SO16 3ZE"))).forEach(order -> System.out.println(order.getItems()));
+        server.getOrders().forEach(Order::setComplete);
+        server.getOrders().forEach(order -> {
+            if(client.isOrderComplete(order))
+                System.out.println("true");
+            else System.out.println("false");
+        });
 //        server.getUsers().forEach(user -> System.out.println(client.getOrders(user)));
 //        System.out.println(client.getPostcodes());
 //        System.out.println(client.getDishes());

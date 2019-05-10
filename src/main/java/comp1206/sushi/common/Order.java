@@ -15,11 +15,13 @@ public class Order extends Model implements Serializable {
 	private boolean complete;
 	private boolean cancelled;
 	private String status;
+	private String name;
+	private static int uniqueID;
 	
 	public Order(User user, HashMap<Dish, Number> items) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/YYYY HH:mm:ss");
 		LocalDateTime now = LocalDateTime.now();
-		this.name = dtf.format(now);
+		this.name = ++uniqueID + " :: " + dtf.format(now);
 		this.items = items;
 		this.user = user;
 		this.complete = false;
